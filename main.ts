@@ -9,9 +9,19 @@ app.use("*", logger());
 // Serve static files
 app.use("/static/*", serveStatic({ root: "./" }));
 // Load monster data
-const monsterData = JSON.parse(
-  await Deno.readTextFile("./static/monster-hunter-DB/monsters.json")
-);
+let monsterData;
+try {
+  const response = await fetch(
+    "https://raw.githubusercontent.com/CrimsonNynja/monster-hunter-DB/refs/heads/master/monsters.json"
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch monster data: ${response.status}`);
+  }
+  monsterData = await response.json();
+} catch (error) {
+  console.error("Failed to load monster data:", error);
+  throw error;
+}
 
 app.get("/", (c) => c.text("Welcome to Monster Hunter API"));
 
