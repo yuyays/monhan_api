@@ -1,33 +1,37 @@
-steps:
-  - name: Setup repo
-    uses: actions/checkout@v4
-    with:
-      submodules: recursive
-      fetch-depth: 0
+name: Deploy
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: main
 
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write # Needed for auth with Deno Deploy
+      contents: read # Needed to clone the repository
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
       - name: Install Deno
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@v1
         with:
-          deno-version: v2.x
+          deno-version: v1.x
 
-    - name: Verify submodule content
-      run: |
-        echo "Submodule status:"
-        git submodule status
-        echo "Monster-DB contents:"
-        ls -la static/monster-hunter-DB/
-        echo "Full file tree:"
-        tree static/
+      - name: Build step
 
-  - name: Deploy to Deno Deploy
-    uses: denoland/deployctl@v1
-    with:
-      project: monhan-api
-      entrypoint: main.ts
-      import-map: deno.json
-      include: |
-        static/monster-hunter-DB/**/*
-        main.ts
-        type.ts
-        deno.json
+        run: "deno task build" # 📝 Update the build command(s) if necessary
+
+      - name: Upload to Deno Deploy
+        uses: denoland/deployctl@v1
+        with:
+          project: "monhan-api" # 📝 Update the deploy project name if necessary
+          entrypoint: "main.ts" # 📝 Update the entrypoint if necessary
