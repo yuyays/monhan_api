@@ -55,3 +55,18 @@ jobs:
       #   run: deno test -A
       # - name: Run application
       #   run: deno run --allow-net --allow-read main.ts
+- name: Verify submodule initialization
+  run: |
+    git submodule status
+    git submodule foreach git status
+    ls -la static/monster-hunter-DB/
+
+- name: Setup repo with submodules
+  run: |
+    git submodule update --init --recursive
+    git submodule status
+
+- name: List all contents recursively
+  run: |
+    find . -type f
+    find static/monster-hunter-DB/ -type f
