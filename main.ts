@@ -6,34 +6,11 @@ import { Monster } from "./type.ts";
 export const app = new Hono();
 app.use("*", logger());
 
-async function logg() {
-  try {
-    console.log("Current working directory:", Deno.cwd());
-    console.log(
-      "Attempting to read from:",
-      new URL("./static/monster-hunter-DB/monsters.json", import.meta.url)
-    );
-
-    const monsterData = JSON.parse(
-      await Deno.readTextFile(
-        new URL("./static/monster-hunter-DB/monsters.json", import.meta.url)
-      )
-    );
-    console.log("Successfully loaded monster data");
-  } catch (error) {
-    console.error("Failed to load monster data:", error);
-    console.log("Directory contents:", await Deno.readDir("./static"));
-    throw error;
-  }
-}
-logg();
 // Serve static files
 app.use("/static/*", serveStatic({ root: "./" }));
 // Load monster data
 const monsterData = JSON.parse(
-  await Deno.readTextFile(
-    new URL("./static/monster-hunter-DB/monsters.json", import.meta.url)
-  )
+  await Deno.readTextFile("./static/monster-hunter-DB/monsters.json")
 );
 
 app.get("/", (c) => c.text("Welcome to Monster Hunter API"));
