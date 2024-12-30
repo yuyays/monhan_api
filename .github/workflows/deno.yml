@@ -10,18 +10,21 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest  
 
     steps:
       - name: Setup repo
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
-      - name: Setup Deno
-        uses: denoland/setup-deno@61fe2df320078202e33d7d5ad347e7dcfa0e8f31  # v1.1.2
+
+      - name: Deploy to Deno Deploy
+        uses: denoland/deployctl@v1
         with:
-          deno-version: v1.x
+          project: monhan_api
+          entrypoint: main.ts 
+
 
       # Uncomment this step to verify the use of 'deno fmt' on each commit.
       - name: Verify formatting
@@ -35,26 +38,4 @@ jobs:
       - name: Run application
         run: deno run --allow-net --allow-read main.ts
 
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
 
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
-          
-      - name: Setup Deno
-        uses: denoland/setup-deno@61fe2df320078202e33d7d5ad347e7dcfa0e8f31  # v1.1.2
-        with:
-          deno-version: v1.x
-
-      - name: Deploy to Deno Deploy
-        uses: denoland/deployctl@v1
-        with:
-          project: monhan-api
-          entrypoint: main.ts 
