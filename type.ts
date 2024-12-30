@@ -1,19 +1,24 @@
-type Game = {
-  game: string;
-  image: string;
-  info: string;
-  danger: string;
-};
+import { z } from "zod";
 
-export type Monster = {
-  _id: {
-    $oid: string;
-  };
-  name: string;
-  type: string;
-  isLarge: boolean;
-  elements: string[];
-  ailments: string[];
-  weakness: string[];
-  games: Game[];
-};
+const GameSchema = z.object({
+  game: z.string(),
+  image: z.string(),
+  info: z.string(),
+  danger: z.string(),
+});
+
+const MonsterSchema = z.object({
+  _id: z.object({
+    $oid: z.string(),
+  }),
+  name: z.string(),
+  type: z.string(),
+  isLarge: z.boolean(),
+  elements: z.array(z.string()),
+  ailments: z.array(z.string()),
+  weakness: z.array(z.string()),
+  games: z.array(GameSchema),
+});
+
+export type Game = z.infer<typeof GameSchema>;
+export type Monster = z.infer<typeof MonsterSchema>;
