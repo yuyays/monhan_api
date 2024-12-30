@@ -62,4 +62,4 @@ jobs:
         uses: denoland/deployctl@v1
         with:
           project: monhan-api
-          entrypoint: main.ts 
+          entrypoint: -allow-net --allow-read main.ts 
