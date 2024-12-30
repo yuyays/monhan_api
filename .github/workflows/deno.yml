@@ -11,69 +11,25 @@ permissions:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
 
     steps:
       - name: Setup repo
         uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-        
-      - name: Build step
-        run: "deno task build"
-        
-      - name: List contents to verify submodule
-        run: |
-          ls -la static/monster-hunter-DB/
-        
-      - name: Deploy to Deno Deploy
-        uses: denoland/deployctl@v1
-        with:
-          project: monhan-api
-          entrypoint: main.ts
-          import-map: deno.json
-          include: |
-            static/**/*.json
-            static/monster-hunter-DB/**/*
-            main.ts
-            type.ts
 
       # Uncomment this step to verify the use of 'deno fmt' on each commit.
       # - name: Verify formatting
       #   run: deno fmt --check
 
-      # - name: Run linter
-      #   run: deno lint
+      - name: Run linter
+        run: deno lint
 
-      # - name: Run tests
-      #   run: deno test -A
-      # - name: Run application
-      #   run: deno run --allow-net --allow-read main.ts
-- name: Verify submodule initialization
-  run: |
-    git submodule status
-    git submodule foreach git status
-    ls -la static/monster-hunter-DB/
-
-- name: Setup repo with submodules
-  run: |
-    git submodule update --init --recursive
-    git submodule status
-
-- name: List all contents recursively
-  run: |
-    find . -type f
-    find static/monster-hunter-DB/ -type f
-
-- name: Verify files before deployment
-  run: |
-    echo "Listing all JSON files:"
-    find . -name "*.json"
-    echo "Checking monster-hunter-DB contents:"
-    ls -R static/monster-hunter-DB/    
+      - name: Run tests
+        run: deno test -A
+      - name: Run application
+        run: deno run --allow-net --allow-read main.ts
