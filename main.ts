@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { serveStatic } from "hono/deno";
-import { Monster } from "./type.ts";
 import { logger } from "hono/logger";
+import { Monster } from "./type.ts";
 
-const app = new Hono();
+export const app = new Hono();
 app.use("*", logger());
 
 // Serve static files
