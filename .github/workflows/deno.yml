@@ -20,7 +20,10 @@ jobs:
           submodules: 'recursive'
 
       - name: Deploy to Deno Deploy
-        uses: denoland/deployctl@v1
+      - uses: denoland/setup-deno@v2
+        with:
+            deno-version: v2.x
+        #uses: denoland/deployctl@v1
         # with:
         #   project: monhan_api
         #   entrypoint: main.ts 
