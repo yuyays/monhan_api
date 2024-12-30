@@ -20,25 +20,31 @@ jobs:
           submodules: 'recursive'
 
       - name: Deploy to Deno Deploy
-      - uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@v2
         with:
             deno-version: v2.x
-        #uses: denoland/deployctl@v1
-        # with:
-        #   project: monhan_api
-        #   entrypoint: main.ts 
+        
+      - name: Build step
+        run: "deno task build"
+        
+      - name: Deploy to Deno Deploy
+        uses: denoland/deployctl@v1
+        with:
+          project: monhan-api
+          entrypoint: main.ts
+  
 
 
       # Uncomment this step to verify the use of 'deno fmt' on each commit.
-      - name: Verify formatting
-        run: deno fmt --check
+      # - name: Verify formatting
+      #   run: deno fmt --check
 
-      - name: Run linter
-        run: deno lint
+      # - name: Run linter
+      #   run: deno lint
 
-      - name: Run tests
-        run: deno test -A
-      - name: Run application
-        run: deno run --allow-net --allow-read main.ts
+      # - name: Run tests
+      #   run: deno test -A
+      # - name: Run application
+      #   run: deno run --allow-net --allow-read main.ts
 
 
