@@ -1,8 +1,10 @@
 import { Hono } from "hono";
 import { serveStatic } from "hono/deno";
 import { Monster } from "./type.ts";
+import { logger } from "hono/logger";
 
 const app = new Hono();
+app.use("*", logger());
 
 // Serve static files
 app.use("/static/*", serveStatic({ root: "./" }));
@@ -11,10 +13,7 @@ const monsterData = JSON.parse(
   await Deno.readTextFile("./static/monster-hunter-DB/monsters.json")
 );
 
-// API routes
 app.get("/", (c) => c.text("Welcome to Monster Hunter API"));
-
-app.get("/api/monsters", (c) => c.json(monsterData.monsters));
 
 app.get("/api/monsters/:name", (c) => {
   const name = c.req.param("name");
@@ -27,20 +26,107 @@ app.get("/api/monsters/:name", (c) => {
   return c.notFound();
 });
 
-app.get("/api/monsters/:name/icon", (c) => {
-  const name = c.req.param("name");
-  const monster: Monster = monsterData.monsters.find(
-    (m: Monster) => m.name.toLowerCase() === name.toLowerCase()
-  );
-  console.log(monster, monster.games, monster.games[0].image);
+// 1. List all monster types
+app.get("/api/types", (c) => {
+  const types = [...new Set(monsterData.monsters.map((m: Monster) => m.type))];
+  return c.json(types);
+});
 
-  if (monster && monster.games && monster.games[0].image) {
-    const iconPath = `/static/monster-hunter-DB/icons/${monster.games[0].image}`;
-    console.log("Icon path:", iconPath);
-    return c.redirect(iconPath);
+// 2. Get monsters by type
+app.get("/api/monsters/type/:type", (c) => {
+  const type = c.req.param("type");
+  const monsters = monsterData.monsters.filter(
+    (m: Monster) => m.type.toLowerCase() === type.toLowerCase()
+  );
+  if (monsters.length === 0) {
+    return c.json({ message: `No monsters found with type: ${type}` }, 404);
   }
-  console.log("Monster or image not found for:", name);
-  return c.notFound();
+  return c.json(monsters);
+});
+
+// 3. Get monsters by element
+app.get("/api/monsters/element/:element", (c) => {
+  const element = c.req.param("element");
+  const monsters = monsterData.monsters.filter(
+    (m: Monster) =>
+      m.elements &&
+      m.elements.some((e: string) => e.toLowerCase() === element.toLowerCase())
+  );
+  if (monsters.length === 0) {
+    return c.json(
+      { message: `No monsters found with element: ${element}` },
+      404
+    );
+  }
+  return c.json(monsters);
+});
+
+// 4. Get monsters by ailment
+app.get("/api/monsters/ailment/:ailment", (c) => {
+  const ailment = c.req.param("ailment");
+  const monsters = monsterData.monsters.filter(
+    (m: Monster) =>
+      m.ailments &&
+      m.ailments.some((a: string) => a.toLowerCase() === ailment.toLowerCase())
+  );
+  if (monsters.length === 0) {
+    return c.json(
+      { message: `No monsters found with ailment: ${ailment}` },
+      404
+    );
+  }
+  return c.json(monsters);
+});
+
+// 5. Get monsters by weakness
+app.get("/api/monsters/weakness/:weakness", (c) => {
+  const weakness = c.req.param("weakness");
+  const monsters = monsterData.monsters.filter(
+    (m: Monster) =>
+      m.weakness &&
+      m.weakness.some((w: string) => w.toLowerCase() === weakness.toLowerCase())
+  );
+  if (monsters.length === 0) {
+    return c.json(
+      { message: `No monsters found with weakness: ${weakness}` },
+      404
+    );
+  }
+  return c.json(monsters);
+});
+
+// 6. Pagination for the monster list
+app.get("/api/monsters", (c) => {
+  const page = parseInt(c.req.query("page") || "1");
+  const limit = parseInt(c.req.query("limit") || "20");
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+
+  const paginatedMonsters = monsterData.monsters.slice(startIndex, endIndex);
+  const totalMonsters = monsterData.monsters.length;
+
+  return c.json({
+    monsters: paginatedMonsters,
+    currentPage: page,
+    totalPages: Math.ceil(totalMonsters / limit),
+    totalMonsters,
+  });
+});
+
+// 7. Search monsters by name
+app.get("/api/search/monsters", (c) => {
+  const query = c.req.query("name")?.toLowerCase();
+  //console.log(query);
+  if (!query) {
+    return c.json([]);
+  }
+
+  const monsters = monsterData.monsters.filter((m: Monster) =>
+    m.name.toLowerCase().includes(query)
+  );
+  //console.log(monsters);
+
+  return c.json(monsters);
 });
 
 Deno.serve(app.fetch);
