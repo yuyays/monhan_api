@@ -10,7 +10,7 @@ app.use("*", logger());
 app.use("/static/*", serveStatic({ root: "./" }));
 // Load monster data
 const monsterData = JSON.parse(
-  await Deno.readTextFile("./static/monster-hunter-DB/monsters.json")
+  await Deno.readTextFile(new URL("./static/monster-hunter-DB/monsters.json", import.meta.url))
 );
 
 app.get("/", (c) => c.text("Welcome to Monster Hunter API"));

@@ -19,10 +19,10 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Deploy to Deno Deploy
+      - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
-            deno-version: v2.x
+          deno-version: v2.x
         
       - name: Build step
         run: "deno task build"
@@ -32,7 +32,11 @@ jobs:
         with:
           project: monhan-api
           entrypoint: main.ts
-  
+          import-map: deno.json
+          include: |
+            static/
+            main.ts
+            type.ts
 
 
       # Uncomment this step to verify the use of 'deno fmt' on each commit.
@@ -46,5 +50,3 @@ jobs:
       #   run: deno test -A
       # - name: Run application
       #   run: deno run --allow-net --allow-read main.ts
-
-
