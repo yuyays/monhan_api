@@ -17,7 +17,8 @@ jobs:
       - name: Setup repo
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: true
+          fetch-depth: 0
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
@@ -27,6 +28,10 @@ jobs:
       - name: Build step
         run: "deno task build"
         
+      - name: List contents to verify submodule
+        run: |
+          ls -la static/monster-hunter-DB/
+        
       - name: Deploy to Deno Deploy
         uses: denoland/deployctl@v1
         with:
@@ -34,7 +39,7 @@ jobs:
           entrypoint: main.ts
           import-map: deno.json
           include: |
-            static/
+            static/monster-hunter-DB/
             main.ts
             type.ts
 
