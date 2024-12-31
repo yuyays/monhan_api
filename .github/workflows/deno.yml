@@ -22,16 +22,15 @@ jobs:
           fetch-depth: 0
 
       - name: Install Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
-          deno-version: v1.x
+          deno-version: v2.x
 
       - name: Build step
-
-        run: "deno task build" # 📝 Update the build command(s) if necessary
+        run: "deno task build"
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "monhan-api" # 📝 Update the deploy project name if necessary
-          entrypoint: "main.ts" # 📝 Update the entrypoint if necessary
+          project: "monhan-api"
+          entrypoint: "main.ts"
