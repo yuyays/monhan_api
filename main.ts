@@ -9,19 +9,9 @@ app.use("*", logger());
 // Serve static files
 app.use("/static/*", serveStatic({ root: "./" }));
 // Load monster data
-let monsterData;
-try {
-  const response = await fetch(
-    "https://raw.githubusercontent.com/CrimsonNynja/monster-hunter-DB/refs/heads/master/monsters.json"
-  );
-  if (!response.ok) {
-    throw new Error(`Failed to fetch monster data: ${response.status}`);
-  }
-  monsterData = await response.json();
-} catch (error) {
-  console.error("Failed to load monster data:", error);
-  throw error;
-}
+const monsterData = JSON.parse(
+  await Deno.readTextFile("./static/monster-hunter-DB-master/monsters.json")
+);
 
 app.get("/", (c) => c.text("Welcome to Monster Hunter API"));
 
@@ -107,36 +97,40 @@ app.get("/api/monsters/weakness/:weakness", (c) => {
 
 // 6. Pagination for the monster list
 app.get("/api/monsters", (c) => {
-  const page = parseInt(c.req.query("page") || "1");
   const limit = parseInt(c.req.query("limit") || "20");
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
+  const offset = parseInt(c.req.query("offset") || "0");
 
-  const paginatedMonsters = monsterData.monsters.slice(startIndex, endIndex);
+  const paginatedMonsters = monsterData.monsters.slice(offset, offset + limit);
   const totalMonsters = monsterData.monsters.length;
 
   return c.json({
-    monsters: paginatedMonsters,
-    currentPage: page,
-    totalPages: Math.ceil(totalMonsters / limit),
-    totalMonsters,
+    count: totalMonsters,
+    next:
+      offset + limit < totalMonsters
+        ? `/api/monsters?limit=${limit}&offset=${offset + limit}`
+        : null,
+    previous:
+      offset > 0
+        ? `/api/monsters?limit=${limit}&offset=${Math.max(0, offset - limit)}`
+        : null,
+    results: paginatedMonsters,
   });
 });
 
-// 7. Search monsters by name
-app.get("/api/search/monsters", (c) => {
-  const query = c.req.query("name")?.toLowerCase();
-  //console.log(query);
-  if (!query) {
-    return c.json([]);
-  }
+// 7. Search monsters by name MIGHT REUSE LATER
+// app.get("/api/search/monsters", (c) => {
+//   const query = c.req.query("name")?.toLowerCase();
+//   //console.log(query);
+//   if (!query) {
+//     return c.json([]);
+//   }
 
-  const monsters = monsterData.monsters.filter((m: Monster) =>
-    m.name.toLowerCase().includes(query)
-  );
-  //console.log(monsters);
+//   const monsters = monsterData.monsters.filter((m: Monster) =>
+//     m.name.toLowerCase().includes(query)
+//   );
+//   console.log(monsters);
 
-  return c.json(monsters);
-});
+//   return c.json(monsters);
+// });
 
 Deno.serve(app.fetch);

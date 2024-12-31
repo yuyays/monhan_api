@@ -64,23 +64,53 @@ Deno.test(
   }
 );
 
-Deno.test("GET /api/monsters - Pagination", async () => {
-  const res = await app.request("/api/monsters?page=1&limit=10");
-  assertEquals(res.status, 200);
-  const data = await res.json();
-  assertEquals(data.monsters.length, 10);
-  assertEquals(typeof data.currentPage, "number");
-  assertEquals(typeof data.totalPages, "number");
-  assertEquals(typeof data.totalMonsters, "number");
-});
+Deno.test("Monsters pagination endpoint", async (t) => {
+  await t.step("default pagination (limit=20, offset=0)", async () => {
+    const res = await app.request("/api/monsters");
+    const data = await res.json();
 
-Deno.test("GET /api/search/monsters - Search monsters by name", async () => {
-  const res = await app.request("/api/search/monsters?name=Rath");
-  assertEquals(res.status, 200);
-  const monsters = await res.json();
-  assertEquals(Array.isArray(monsters), true);
-  monsters.forEach((monster: Monster) => {
-    MonsterSchema.parse(monster);
-    assertEquals(monster.name.toLowerCase().includes("rath"), true);
+    assertEquals(res.status, 200);
+    assertEquals(data.results.length, 20);
+    assertEquals(data.previous, null);
+    assertEquals(data.next, "/api/monsters?limit=20&offset=20");
+  });
+
+  await t.step("custom limit", async () => {
+    const res = await app.request("/api/monsters?limit=5");
+    const data = await res.json();
+
+    assertEquals(res.status, 200);
+    assertEquals(data.results.length, 5);
+    assertEquals(data.previous, null);
+    assertEquals(data.next, "/api/monsters?limit=5&offset=5");
+  });
+
+  await t.step("custom offset", async () => {
+    const res = await app.request("/api/monsters?offset=5");
+    const data = await res.json();
+
+    assertEquals(res.status, 200);
+    assertEquals(data.results.length, 20);
+    assertEquals(data.previous, "/api/monsters?limit=20&offset=0");
+    assertEquals(data.next, "/api/monsters?limit=20&offset=25");
+  });
+
+  await t.step("both limit and offset", async () => {
+    const res = await app.request("/api/monsters?limit=10&offset=20");
+    const data = await res.json();
+
+    assertEquals(res.status, 200);
+    assertEquals(data.results.length, 10);
+    assertEquals(data.previous, "/api/monsters?limit=10&offset=10");
+    assertEquals(data.next, "/api/monsters?limit=10&offset=30");
+  });
+
+  await t.step("offset beyond total count", async () => {
+    const res = await app.request("/api/monsters?offset=1000");
+    const data = await res.json();
+
+    assertEquals(res.status, 200);
+    assertEquals(data.results.length, 0);
+    assertEquals(data.next, null);
   });
 });
