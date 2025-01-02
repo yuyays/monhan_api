@@ -116,21 +116,3 @@ app.get("/api/monsters", (c) => {
     results: paginatedMonsters,
   });
 });
-
-// 7. Search monsters by name MIGHT REUSE LATER
-// app.get("/api/search/monsters", (c) => {
-//   const query = c.req.query("name")?.toLowerCase();
-//   //console.log(query);
-//   if (!query) {
-//     return c.json([]);
-//   }
-
-//   const monsters = monsterData.monsters.filter((m: Monster) =>
-//     m.name.toLowerCase().includes(query)
-//   );
-//   console.log(monsters);
-
-//   return c.json(monsters);
-// });
-
-Deno.serve(app.fetch);

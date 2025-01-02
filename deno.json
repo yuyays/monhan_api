@@ -4,7 +4,7 @@
     "zod": "npm:zod@^3.24.1"
   },
   "tasks": {
-    "start": "deno run --allow-net --allow-read main.ts",
+    "start": "deno run --allow-net --allow-read index.ts",
     "test":"deno test  --allow-read --allow-net main.test.ts"
   },
   "compilerOptions": {
