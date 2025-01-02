@@ -31,4 +31,3 @@ jobs:
         with:
           project: "monhan-api"
           entrypoint: "index.ts"
-          token: ${{ secrets.DENO_DEPLOY_TOKEN }}
