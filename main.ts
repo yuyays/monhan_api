@@ -3,7 +3,7 @@ import { serveStatic } from "hono/deno";
 import { logger } from "hono/logger";
 import { Monster } from "./type.ts";
 
-const app = new Hono();
+export const app = new Hono();
 app.use("*", logger());
 
 // Serve static files
@@ -116,5 +116,3 @@ app.get("/api/monsters", (c) => {
     results: paginatedMonsters,
   });
 });
-
-export default app;
