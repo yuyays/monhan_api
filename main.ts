@@ -1,13 +1,26 @@
 import { Hono } from "hono";
 import { serveStatic } from "hono/deno";
 import { logger } from "hono/logger";
+import { cache } from "hono/cache";
+import { prettyJSON } from "hono/pretty-json";
+import { cors } from "hono/cors";
 import { Monster } from "./type.ts";
 
 export const app = new Hono();
 app.use("*", logger());
-
+app.use("*", prettyJSON());
+app.get(
+  "*",
+  cache({
+    cacheName: "monhan_api",
+    cacheControl: "max-age=3600",
+    wait: true,
+  })
+);
+app.use("*", cors());
 // Serve static files
 app.use("/static/*", serveStatic({ root: "./" }));
+
 // Load monster data
 const monsterData = JSON.parse(
   await Deno.readTextFile("./static/monster-hunter-DB-master/monsters.json")
