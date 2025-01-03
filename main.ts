@@ -116,3 +116,27 @@ app.get("/api/monsters", (c) => {
     results: paginatedMonsters,
   });
 });
+
+// global error handler
+app.onError((err, c) => {
+  console.error(`${err}`);
+  return c.json(
+    {
+      error: "Internal Server Error",
+      message: err.message,
+    },
+    500
+  );
+});
+
+// global custom error for not found
+app.notFound((c) => {
+  return c.json(
+    {
+      error: "Not Found",
+      message: "The requested endpoint does not exist",
+      path: c.req.path,
+    },
+    404
+  );
+});
