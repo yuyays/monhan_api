@@ -79,33 +79,26 @@ deno task start
 1. denoをインストールする。
 
 ```
-
 curl -fsSL https://deno.land/x/install/install.sh | sh
-
 ```
 
 2. リポジトリをクローンする：
 
 ```
-
 git clone https://github.com/yuyays/monhan_api.git
-
 cd monster-hunter-api
-
 ```
 
 3. deno でウェブサーバを実行する。
 
 ```
-
-deno タスク開始
-
+deno task start
 ```
 
 # 今後の機能
 
-- [ ]風土記やクエストなどのルートを増やす。
+- [ ] 風土記やクエストなどのルートを増やす。
 
-- [ ]openAPI hono標準
+- [ ] openAPI hono標準
 
 - [ ] sentryロギング、レート制限
