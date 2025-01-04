@@ -6,7 +6,7 @@ import { prettyJSON } from "hono/pretty-json";
 import { cors } from "hono/cors";
 import { Monster } from "./type.ts";
 
-export const app = new Hono();
+const app = new Hono();
 app.use("*", logger());
 app.use("*", prettyJSON());
 app.get(
@@ -22,7 +22,7 @@ app.use("*", cors());
 app.use("/static/*", serveStatic({ root: "./" }));
 
 // Load monster data
-const monsterData = JSON.parse(
+export const monsterData = JSON.parse(
   await Deno.readTextFile("./static/monster-hunter-DB-master/monsters.json")
 );
 
@@ -153,3 +153,5 @@ app.notFound((c) => {
     404
   );
 });
+
+export default app;
