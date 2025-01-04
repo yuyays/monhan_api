@@ -1,11 +1,12 @@
 {
   "imports": {
+    "@hono/zod-openapi": "npm:@hono/zod-openapi@^0.18.3",
     "hono": "jsr:@hono/hono@^4.6.15",
     "zod": "npm:zod@^3.24.1"
   },
   "tasks": {
     "start": "deno run --allow-net --allow-read index.ts",
-    "test":"deno test  --allow-read --allow-net main.test.ts"
+    "test":"deno test  --allow-read --allow-net routes/monsters/main.test.ts"
   },
   "compilerOptions": {
     "jsx": "precompile",
