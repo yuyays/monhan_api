@@ -4,9 +4,11 @@ import { prettyJSON } from "hono/pretty-json";
 import { cache } from "hono/cache";
 import { cors } from "hono/cors";
 import { serveStatic } from "hono/deno";
+import { rateLimit } from "./ratelimit.ts";
 
 const app = new Hono();
 
+app.use("*", rateLimit(100, 60));
 app.use("*", logger());
 app.use("*", prettyJSON());
 app.get(
@@ -19,7 +21,6 @@ app.get(
 );
 app.use("*", cors());
 app.use("/static/*", serveStatic({ root: "./" }));
-
 // Error handlers
 app.onError((err, c) => {
   console.error(`${err}`);
