@@ -5,7 +5,7 @@
     "zod": "npm:zod@^3.24.1"
   },
   "tasks": {
-    "start": "deno run --allow-env --allow-net --allow-read --env-file=.env index.ts",
+    "start": "deno run --allow-env --allow-net --allow-read --allow-sys --env-file=.env index.ts",
     "test":"deno test  --allow-read --allow-net routes/monsters/main.test.ts"
   },
   "compilerOptions": {
