@@ -93,5 +93,18 @@ export const setupRoutes = (app: Hono, monsterData: MonsterData) => {
             : null,
         results: paginatedMonsters,
       });
+    })
+    .get("/api/monsters/:name/icon", (c) => {
+      const name = c.req.param("name");
+      const monster = monsterData.monsters.find(
+        (m: Monster) => m.name.toLowerCase() === name.toLowerCase()
+      );
+      if (monster && monster.games && monster.games[0].image) {
+        const iconPath = `/static/monster-hunter-DB-master/icons/${monster.games[0].image}`;
+        console.log("Icon path:", iconPath);
+        return c.redirect(iconPath);
+      }
+      console.log("Monster or image not found for:", name);
+      return c.notFound();
     });
 };

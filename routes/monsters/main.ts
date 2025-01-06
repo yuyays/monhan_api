@@ -5,7 +5,7 @@ import { Monster } from "../../type.ts";
 export type MonsterData = {
   monsters: Monster[];
 };
-const monsterData: MonsterData = JSON.parse(
+export const monsterData: MonsterData = JSON.parse(
   await Deno.readTextFile("./static/monster-hunter-DB-master/monsters.json")
 );
 setupRoutes(app, monsterData);
