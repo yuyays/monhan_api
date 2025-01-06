@@ -1,4 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { swaggerUI } from "@hono/swagger-ui";
 import { PinoLogger } from "npm:hono-pino";
 //import { serveStatic } from "hono/deno";
 // import { cache } from "hono/cache";
@@ -63,7 +64,7 @@ app.doc("/api/docs", {
   openapi: "3.0.0",
   info: {
     title: "Monster Hunter API",
-    version: "1.0.0",
+    version: "0.0.1",
     description: "API for accessing Monster Hunter monster data",
   },
   servers: [
@@ -72,6 +73,43 @@ app.doc("/api/docs", {
       description: "Production server",
     },
   ],
+});
+
+app.get(
+  "/ui",
+  swaggerUI({
+    url: "/doc",
+  })
+);
+
+app.doc("/doc", {
+  info: {
+    title: "An API",
+    version: "v0.01",
+  },
+  openapi: "3.1.0",
+});
+
+app.onError((err, c) => {
+  console.error(`${err}`);
+  return c.json(
+    {
+      error: "Internal Server Error",
+      message: err.message,
+    },
+    500
+  );
+});
+
+app.notFound((c) => {
+  return c.json(
+    {
+      error: "Not Found",
+      message: "The requested endpoint does not exist",
+      path: c.req.path,
+    },
+    404
+  );
 });
 
 export default app;
