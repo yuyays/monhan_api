@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Monster } from "../../type.ts";
 import { MonsterData } from "./main.ts";
 
+//this is pure Hono instace for route. checkout routes.ts for OpenAPIHono use.
 export const setupRoutes = (app: Hono, monsterData: MonsterData) => {
   app
     .get("/", (c) => c.text("Welcome to Monster Hunter API"))
