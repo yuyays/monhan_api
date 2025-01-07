@@ -74,3 +74,200 @@ export const getPaginatedMonstersRoute = createRoute({
     },
   },
 });
+
+export const getMonsterTypesRoute = createRoute({
+  method: "get",
+  path: "/api/types",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(z.string()),
+        },
+      },
+      description: "List of all monster types",
+    },
+  },
+});
+
+export const getMonstersByTypeRoute = createRoute({
+  method: "get",
+  path: "/api/monsters/type/{type}",
+  request: {
+    params: z.object({
+      type: z.string().openapi({
+        param: {
+          name: "type",
+          in: "path",
+        },
+        example: "Flying Wyvern",
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(MonsterSchema),
+        },
+      },
+      description: "Monsters of specified type",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: "No monsters found with specified type",
+    },
+  },
+});
+
+export const getMonstersByElementRoute = createRoute({
+  method: "get",
+  path: "/api/monsters/element/{element}",
+  request: {
+    params: z.object({
+      element: z.string().openapi({
+        param: {
+          name: "element",
+          in: "path",
+        },
+        example: "Fire",
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(MonsterSchema),
+        },
+      },
+      description: "Monsters with specified element",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: "No monsters found with specified element",
+    },
+  },
+});
+
+export const getMonstersByAilmentRoute = createRoute({
+  method: "get",
+  path: "/api/monsters/ailment/{ailment}",
+  request: {
+    params: z.object({
+      ailment: z.string().openapi({
+        param: {
+          name: "ailment",
+          in: "path",
+        },
+        example: "Fireblight",
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(MonsterSchema),
+        },
+      },
+      description: "Monsters with specified ailment",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: "No monsters found with specified ailment",
+    },
+  },
+});
+
+export const getMonstersByWeaknessRoute = createRoute({
+  method: "get",
+  path: "/api/monsters/weakness/{weakness}",
+  request: {
+    params: z.object({
+      weakness: z.string().openapi({
+        param: {
+          name: "weakness",
+          in: "path",
+        },
+        example: "Fire",
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(MonsterSchema),
+        },
+      },
+      description: "Monsters with specified weakness",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: "No monsters found with specified weakness",
+    },
+  },
+});
+
+export const getMonsterIconRoute = createRoute({
+  method: "get",
+  path: "/api/monsters/{name}/icon",
+  request: {
+    params: z.object({
+      name: z.string().openapi({
+        param: {
+          name: "name",
+          in: "path",
+        },
+        example: "Rathalos",
+      }),
+    }),
+  },
+  responses: {
+    302: {
+      description: "Redirect to monster icon",
+      headers: {
+        Location: {
+          schema: {
+            type: "string",
+          },
+        },
+      },
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: "Monster or icon not found",
+    },
+  },
+});
