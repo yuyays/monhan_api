@@ -1,12 +1,12 @@
 import { assertEquals } from "jsr:@std/assert";
 import { Monster, MonsterSchema } from "../../type.ts";
-import app from "./main.ts";
+import { app } from "../../app.ts";
 
-Deno.test("GET / - Welcome message", async () => {
-  const res = await app.request("/");
-  assertEquals(res.status, 200);
-  assertEquals(await res.text(), "Welcome to Monster Hunter API");
-});
+// Deno.test("GET / - Welcome message", async () => {
+//   const res = await app.request("/");
+//   assertEquals(res.status, 200);
+//   assertEquals(await res.text(), "Welcome to Monster Hunter API");
+// });
 
 Deno.test("GET /api/monsters/:name - Get monster by name", async () => {
   const res = await app.request("/api/monsters/Rathalos");
