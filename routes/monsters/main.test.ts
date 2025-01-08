@@ -1,5 +1,5 @@
 import { assertEquals } from "jsr:@std/assert";
-import { Monster, MonsterSchema } from "../../type.ts";
+import { Monster, MonsterSchema } from "../../lib/type.ts";
 import { app } from "../../app.ts";
 
 // Deno.test("GET / - Welcome message", async () => {

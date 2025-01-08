@@ -1,6 +1,6 @@
 import { createRoute } from "@hono/zod-openapi";
 import { z } from "@hono/zod-openapi";
-import { MonsterSchema } from "./type.ts";
+import { MonsterSchema } from "../../lib/type.ts";
 
 export const getMonsterRoute = createRoute({
   method: "get",

@@ -4,7 +4,7 @@ import {
   getEndemicLifeByNameRoute,
   getPaginatedEndemicLifeRoute,
 } from "./routes.ts";
-import { EndemicLife, EndemicLifeData } from "../../type.ts";
+import { EndemicLife, EndemicLifeData } from "../../lib/type.ts";
 import { AppBindings } from "../../lib/create-app.ts";
 
 export const endemicLifeData: EndemicLifeData = JSON.parse(

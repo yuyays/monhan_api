@@ -9,8 +9,8 @@ import {
   getMonstersByWeaknessRoute,
   getMonsterTypesRoute,
   getPaginatedMonstersRoute,
-} from "../../routes.ts";
-import { Monster, MonsterData } from "../../type.ts";
+} from "./routes.ts";
+import { Monster, MonsterData } from "../../lib/type.ts";
 import { AppBindings } from "../../lib/create-app.ts";
 
 export const monsterData: MonsterData = JSON.parse(

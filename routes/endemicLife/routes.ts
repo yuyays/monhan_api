@@ -1,6 +1,6 @@
 import { createRoute } from "@hono/zod-openapi";
 import { z } from "@hono/zod-openapi";
-import { EndemicLifeSchema } from "../../type.ts";
+import { EndemicLifeSchema } from "../../lib/type.ts";
 
 export const getEndemicLifeByNameRoute = createRoute({
   method: "get",
