@@ -1,13 +1,13 @@
 import { app } from "../../app.ts";
 import { setupRoutes } from "./route.ts";
-import { Monster } from "../../type.ts";
+import { Monster, MonsterData } from "../../type.ts";
 
-export type MonsterData = {
-  monsters: Monster[];
-};
-export const monsterData: MonsterData = JSON.parse(
-  await Deno.readTextFile("./static/monster-hunter-DB-master/monsters.json")
-);
-setupRoutes(app, monsterData);
+// export type MonsterData = {
+//   monsters: Monster[];
+// };
+// export const monsterData: MonsterData = JSON.parse(
+//   await Deno.readTextFile("./static/monster-hunter-DB-master/monsters.json")
+// );
+//setupRoutes(app, monsterData);
 
-export default app;
+//export default app;

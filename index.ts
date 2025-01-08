@@ -1,5 +1,2 @@
-import app from "./routes/monsters/handlers.ts";
-
-//import app from "./routes/monsters/main.ts";
-
+import { app } from "./app.ts";
 Deno.serve(app.fetch);
