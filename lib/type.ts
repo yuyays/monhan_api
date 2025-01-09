@@ -147,3 +147,7 @@ export type MonsterData = {
 export type EndemicLifeData = {
   endemicLife: EndemicLife[];
 };
+
+export type QuestData = {
+  quests: Quest[];
+};
