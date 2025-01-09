@@ -13,10 +13,6 @@ import {
 import { Monster, MonsterData } from "../../lib/type.ts";
 import { AppBindings } from "../../lib/create-app.ts";
 
-export const monsterData: MonsterData = JSON.parse(
-  await Deno.readTextFile("./static/monster-hunter-DB-master/monsters.json")
-);
-
 export const setupMonsterRoutes = (
   app: OpenAPIHono<AppBindings>,
   monsterData: MonsterData

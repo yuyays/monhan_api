@@ -7,10 +7,6 @@ import {
 import { EndemicLife, EndemicLifeData } from "../../lib/type.ts";
 import { AppBindings } from "../../lib/create-app.ts";
 
-export const endemicLifeData: EndemicLifeData = JSON.parse(
-  await Deno.readTextFile("./static/monster-hunter-DB-master/endemicLife.json")
-);
-
 export const setupEndemicLifeRoutes = (
   app: OpenAPIHono<AppBindings>,
   endemicLifeData: EndemicLifeData
