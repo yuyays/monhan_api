@@ -2,12 +2,12 @@
 #### 日本語での説明は下にあります。
 A RESTful API service built with Deno and Hono that provides access to Monster Hunter game data.
 ## Features
-- Monster data retrieval with pagination
-- Search monsters by name, type, element, ailment, and weakness
-- OpenAPI/Swagger documentation(coming soon)
+- Monster, endemic life, and quests data retrieval
+- OpenAPI/Swagger documentation
 - CORS enabled
 - Response caching
 - Static file serving
+- Upstash redis to rate limit
 
 ## Tech Stack
 - Deno - Runtime environment
@@ -28,16 +28,20 @@ curl -fsSL https://deno.land/x/install/install.sh | sh
 git clone https://github.com/yuyays/monhan_api.git
 cd monster-hunter-api
 ```
-3. run web sever with deno
+
+3. set up env
+```
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+LOG_LEVEL="debug"
+DENO_ENV="development"
+```   
+4. run web sever with deno
 ```
 deno task start
 ```
 # upcoming feacture
-- [ ] more routes such as endemic life and quest.
-- [ ] openAPI hono standard
-- [ ] Sentry logging, rate limit
-
-
+- [ ] filter on the server side. eg. by types
 
 # モンスターハンターAPI
 
@@ -45,18 +49,18 @@ deno task start
 
 ## 特徴
 
-- ページネーションによるモンスターデータ検索
+- モンスター、環境生物、クエストデータ検索
 
 - モンスターの名前、タイプ、エレメント、病気、弱点による検索
 
-- OpenAPI/Swaggerドキュメント(近日公開)
+- OpenAPI/Swaggerドキュメント
 
 - CORS対応
 
 - レスポンスのキャッシュ
 
 - 静的ファイルサービング
-
+- Upstash redisによるrate limit機能
 
 ## 技術スタック
 
@@ -88,8 +92,14 @@ curl -fsSL https://deno.land/x/install/install.sh | sh
 git clone https://github.com/yuyays/monhan_api.git
 cd monster-hunter-api
 ```
-
-3. deno でウェブサーバを実行する。
+3. set up env
+```
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+LOG_LEVEL="debug"
+DENO_ENV="development"
+```   
+4. deno でウェブサーバを実行する。
 
 ```
 deno task start
@@ -97,8 +107,4 @@ deno task start
 
 # 今後の機能
 
-- [ ] 風土記やクエストなどのルートを増やす。
-
-- [ ] openAPI hono標準
-
-- [ ] sentryロギング、レート制限
+- [ ] サーバーの方でクエリをフィルターする機能　例えばタイプ。
