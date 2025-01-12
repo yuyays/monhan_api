@@ -7,7 +7,7 @@
   },
   "tasks": {
     "start": "deno run --allow-env --allow-net --allow-read --allow-sys --env-file=.env index.ts",
-    "test":"deno test  --allow-env --allow-read --allow-net --allow-sys routes/monsters/routes.test.ts"
+    "test":"deno test  --allow-env --allow-read --allow-net --allow-sys routes/monsters/routes.test.ts routes/quests/routes.test.ts routes/endemicLife/routes.test.ts" 
   },
   "compilerOptions": {
     "jsx": "precompile",
