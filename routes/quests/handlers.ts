@@ -46,3 +46,24 @@ export const setupQuestsRoutes = (
     });
   });
 };
+
+// Once we set the json data in database and query to db,
+// we can write in this way.
+// export const setupQuestsRoutes: RouteHandler<
+//   typeof getQuestByIdRoute,
+//   AppBindings
+// > = (c) => {
+//   const { id } = c.req.valid("param");
+//   const quest = questsData.quests.find((q) => q._id.$oid === id);
+
+//   if (!quest) {
+//     return c.json(
+//       {
+//         message: `Quest not found with id: ${id}`,
+//       },
+//       404
+//     );
+//   }
+
+//   return c.json(quest, 200);
+// };

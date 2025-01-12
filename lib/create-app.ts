@@ -29,6 +29,7 @@ export default function createApp() {
   //     wait: true,
   //   })
   // );
+  //  app.openapi(getQuestByIdRoute, setupQuestsRoutes);
 
   app.doc("/api/docs", {
     openapi: "3.0.0",
