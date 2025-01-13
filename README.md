@@ -1,19 +1,19 @@
 # Monster Hunter API
 #### 日本語での説明は下にあります。
-A RESTful API service built with Deno and Hono that provides access to Monster Hunter game data.
+A RESTful API service built with Hono that provides access to Monster Hunter game data.
 ## Features
 - Monster, endemic life, and quests data retrieval
 - OpenAPI/Swagger documentation
-- CORS enabled
-- Response caching
+- Fetch data with some filter
 - Static file serving
-- Upstash redis to rate limit
 
 ## Tech Stack
-- Deno - Runtime environment
-- Hono - Web framework
-- Zod - TypeScript-first schema validation
-- OpenAPI/Swagger - API documentation
+- [Deno](https://deno.com/) - Runtime environment
+- [Hono](https://hono.dev/) - Web framework
+- [Zod for HonoOpenAPI](https://github.com/honojs/middleware/tree/main/packages/zod-openapi) - TypeScript-first schema validation
+- [OpenAPI/Swagger for Hono](https://github.com/honojs/middleware/tree/main/packages/swagger-ui) - API documentation
+- [Pino Logger for hono](https://github.com/maou-shonen/hono-pino)
+- [Upstash](https://upstash.com/)
   
 I use deno but you can run this on most of JS runtime. Check out [hono document](https://hono.dev/docs/getting-started/basic)
 
@@ -41,7 +41,7 @@ DENO_ENV="development"
 deno task start
 ```
 # upcoming feacture
-- [ ] filter on the server side. eg. by types
+- [ ] host data on database and server static image from bucket such as s3, r2 then query from there
 
 # モンスターハンターAPI
 
@@ -50,61 +50,46 @@ deno task start
 ## 特徴
 
 - モンスター、環境生物、クエストデータ検索
-
 - モンスターの名前、タイプ、エレメント、病気、弱点による検索
-
+- モンスターのエレメントや弱点などによるフィルターする機能
 - OpenAPI/Swaggerドキュメント
-
-- CORS対応
-
-- レスポンスのキャッシュ
-
 - 静的ファイルサービング
-- Upstash redisによるrate limit機能
+
 
 ## 技術スタック
-
-- Deno - ランタイム環境
-
-- Hono - ウェブフレームワーク
-
-- Zod - TypeScriptファーストのスキーマ検証
-
-- OpenAPI/Swagger - APIドキュメンテーション
-
-  
+- [Deno](https://deno.com/) - ランタイム環境
+- [Hono](https://hono.dev/) - ウェブフレームワーク
+- [Zod for HonoOpenAPI](https://github.com/honojs/middleware/tree/main/packages/zod-openapi) - TypeScriptファーストのスキーマ検証
+- [OpenAPI/Swagger for Hono](https://github.com/honojs/middleware/tree/main/packages/swagger-ui) - APIドキュメンテーション
+- [Pino Logger for hono](https://github.com/maou-shonen/hono-pino) - ログ
+- [Upstash](https://upstash.com/)　- rate limit
 
 私はdenoを使用していますが、他のJSランタイムで実行できます。[honoドキュメント](https://hono.dev/docs/getting-started/basic)をチェックしてください。
 
 
 ## はじめに
-
-
 1. denoをインストールする。
-
 ```
 curl -fsSL https://deno.land/x/install/install.sh | sh
 ```
 
 2. リポジトリをクローンする：
-
 ```
 git clone https://github.com/yuyays/monhan_api.git
 cd monster-hunter-api
 ```
+
 3. set up env
 ```
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 LOG_LEVEL="debug"
 DENO_ENV="development"
-```   
-4. deno でウェブサーバを実行する。
+```
 
+4. deno でウェブサーバを実行する。
 ```
 deno task start
 ```
 
 # 今後の機能
-
-- [ ] サーバーの方でクエリをフィルターする機能　例えばタイプ。
