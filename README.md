@@ -12,11 +12,14 @@ A RESTful API service built with Hono that provides access to Monster Hunter gam
 - [Hono](https://hono.dev/) - Web framework
 - [Zod for HonoOpenAPI](https://github.com/honojs/middleware/tree/main/packages/zod-openapi) - TypeScript-first schema validation
 - [OpenAPI/Swagger for Hono](https://github.com/honojs/middleware/tree/main/packages/swagger-ui) - API documentation
-- [Pino Logger for hono](https://github.com/maou-shonen/hono-pino)
-- [Upstash](https://upstash.com/)
+- [Pino Logger for hono](https://github.com/maou-shonen/hono-pino) - logger
+- [Upstash](https://upstash.com/) - rate limit
   
 I use deno but you can run this on most of JS runtime. Check out [hono document](https://hono.dev/docs/getting-started/basic)
-
+## Data Source
+- I use all the data and image from [https://github.com/CrimsonNynja/monster-hunter-DB](https://github.com/CrimsonNynja/monster-hunter-DB).
+- This API is read only so if you want to add more monster data, plese make a pull request to the repo above.
+- Thank you for [CrimsonNynja](https://github.com/CrimsonNynja)
 ## Getting Started
 
 1. install deno
@@ -29,7 +32,7 @@ git clone https://github.com/yuyays/monhan_api.git
 cd monster-hunter-api
 ```
 
-3. set up env
+3. set up envf
 ```
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
@@ -41,7 +44,11 @@ DENO_ENV="development"
 deno task start
 ```
 # upcoming feacture
-- [ ] host data on database and server static image from bucket such as s3, r2 then query from there
+- [ ] host data on database and server static image from bucket such as s3, r2 then query from there.
+
+# Clinet code example
+- I have client side code build with Next.js but currently not calling this repo backend.
+- Check out [https://monhan.vercel.app/](https://monhan.vercel.app/) [repo](https://github.com/yuyays/monhan)
 
 # モンスターハンターAPI
 
@@ -55,7 +62,6 @@ deno task start
 - OpenAPI/Swaggerドキュメント
 - 静的ファイルサービング
 
-
 ## 技術スタック
 - [Deno](https://deno.com/) - ランタイム環境
 - [Hono](https://hono.dev/) - ウェブフレームワーク
@@ -66,7 +72,9 @@ deno task start
 
 私はdenoを使用していますが、他のJSランタイムで実行できます。[honoドキュメント](https://hono.dev/docs/getting-started/basic)をチェックしてください。
 
-
+## データ
+- このプロジェクトは、[https://github.com/CrimsonNynja/monster-hunter-DB](https://github.com/CrimsonNynja/monster-hunter-DB)のデータを基に構築されています。貴重なリソースを提供してくださった[CrimsonNynja](https://github.com/CrimsonNynja)に感謝します！
+- このAPIは読み込み専用なので、モンスターのデータを追加したい場合は、上記のレポにプルリクエストしてください。
 ## はじめに
 1. denoをインストールする。
 ```
@@ -91,5 +99,9 @@ DENO_ENV="development"
 ```
 deno task start
 ```
-
+# クライエントコードの例
+- Next.js を使用したクライエント側のコードがありますが、現在バックエンドはこちらのhonoで作られたものよりデータをフェッチしていません。
+- [https://monhan.vercel.app/](https://monhan.vercel.app/) , 
+- [レポジトリ](https://github.com/yuyays/monhan)
 # 今後の機能
+データと画像をどこかにのせてクエリする。
