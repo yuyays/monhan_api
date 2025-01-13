@@ -129,7 +129,8 @@ export default function createApp() {
             </ul>
   
             <h2>Example Endpoints</h2>
-            <div class="endpoint">GET /api/monsters - Get a list of all monsters</div>
+            <div class="endpoint">GET api/monsters/filter?elements=fire,water&elements_operator=or&weakness_operator=and&weakness=ice,thunder,fire
+                - Get a list of all monsters with element with (fire OR water) AND weakness with (ice And thunder And fire)</div>
             <div class="endpoint">GET /api/monsters?limit=10&offset=20 - Get a list of all monsters with limit and offset with following value</div>
             
             <div class="endpoint">GET /api/quests - Get a list of all quests</div>
