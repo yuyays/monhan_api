@@ -285,7 +285,7 @@ export const getFilteredMonstersRoute = createRoute({
             name: "elements",
             in: "query",
           },
-          example: "fire,water",
+          example: "fire,water,thunder",
           description: "Comma-separated list of elements",
         }),
       elements_operator: z
@@ -307,7 +307,7 @@ export const getFilteredMonstersRoute = createRoute({
             name: "weakness",
             in: "query",
           },
-          example: "ice,thunder",
+          example: "ice,water",
           description: "Comma-separated list of weaknesses",
         }),
       weakness_operator: z
@@ -329,7 +329,7 @@ export const getFilteredMonstersRoute = createRoute({
             name: "ailments",
             in: "query",
           },
-          example: "poison,blast",
+          example: "Thunderblight, Paralysis",
           description: "Comma-separated list of ailments",
         }),
       ailments_operator: z
