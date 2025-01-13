@@ -271,3 +271,88 @@ export const getMonsterIconRoute = createRoute({
     },
   },
 });
+
+export const getFilteredMonstersRoute = createRoute({
+  method: "get",
+  path: "/api/monsters/filter",
+  request: {
+    query: z.object({
+      elements: z
+        .string()
+        .optional()
+        .openapi({
+          param: {
+            name: "elements",
+            in: "query",
+          },
+          example: "fire,water",
+          description: "Comma-separated list of elements",
+        }),
+      elements_operator: z
+        .enum(["and", "or"])
+        .optional()
+        .openapi({
+          param: {
+            name: "elements_operator",
+            in: "query",
+          },
+          example: "or",
+          description: "Operator for elements filter (and/or)",
+        }),
+      weakness: z
+        .string()
+        .optional()
+        .openapi({
+          param: {
+            name: "weakness",
+            in: "query",
+          },
+          example: "ice,thunder",
+          description: "Comma-separated list of weaknesses",
+        }),
+      weakness_operator: z
+        .enum(["and", "or"])
+        .optional()
+        .openapi({
+          param: {
+            name: "weakness_operator",
+            in: "query",
+          },
+          example: "and",
+          description: "Operator for weakness filter (and/or)",
+        }),
+      ailments: z
+        .string()
+        .optional()
+        .openapi({
+          param: {
+            name: "ailments",
+            in: "query",
+          },
+          example: "poison,blast",
+          description: "Comma-separated list of ailments",
+        }),
+      ailments_operator: z
+        .enum(["and", "or"])
+        .optional()
+        .openapi({
+          param: {
+            name: "ailments_operator",
+            in: "query",
+          },
+          example: "or",
+          description: "Operator for ailments filter (and/or)",
+        }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(MonsterSchema),
+        },
+      },
+      description: "Filtered list of monsters",
+    },
+  },
+});

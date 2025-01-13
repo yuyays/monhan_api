@@ -1,6 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 
 import {
+  getFilteredMonstersRoute,
   getMonsterIconRoute,
   getMonsterRoute,
   getMonstersByAilmentRoute,
@@ -44,6 +45,81 @@ export const setupMonsterRoutes = (
           : null,
       results: paginatedMonsters,
     });
+  });
+
+  app.openapi(getFilteredMonstersRoute, (c) => {
+    const filterByArrayProperty = (
+      monsters: Monster[],
+      values: string[],
+      operator: "and" | "or",
+      propertyName: keyof Pick<Monster, "elements" | "ailments" | "weakness">
+    ) => {
+      console.log(`Filtering ${propertyName}:`);
+      console.log(`Operation: ${operator.toUpperCase()}`);
+      console.log(`Values to match: ${values.join(", ")}`);
+
+      return monsters.filter((monster) => {
+        const monsterValues =
+          monster[propertyName]?.map((v) => v.toLowerCase()) ?? [];
+
+        const result =
+          operator === "and"
+            ? values.every((v) => monsterValues.includes(v))
+            : values.some((v) => monsterValues.includes(v));
+
+        return result;
+      });
+    };
+
+    const {
+      elements,
+      elements_operator = "or",
+      weakness,
+      weakness_operator = "or",
+      ailments,
+      ailments_operator = "or",
+    } = c.req.valid("query");
+
+    let filteredMonsters = monsterData.monsters;
+
+    // Apply filters if parameters are provided
+    if (elements) {
+      const elementValues = elements
+        .split(",")
+        .map((e) => e.trim().toLowerCase());
+      filteredMonsters = filterByArrayProperty(
+        filteredMonsters,
+        elementValues,
+        elements_operator,
+        "elements"
+      );
+    }
+
+    if (weakness) {
+      const weaknessValues = weakness
+        .split(",")
+        .map((w) => w.trim().toLowerCase());
+      filteredMonsters = filterByArrayProperty(
+        filteredMonsters,
+        weaknessValues,
+        weakness_operator,
+        "weakness"
+      );
+    }
+
+    if (ailments) {
+      const ailmentValues = ailments
+        .split(",")
+        .map((a) => a.trim().toLowerCase());
+      filteredMonsters = filterByArrayProperty(
+        filteredMonsters,
+        ailmentValues,
+        ailments_operator,
+        "ailments"
+      );
+    }
+
+    return c.json(filteredMonsters);
   });
 
   app.openapi(getMonsterRoute, (c) => {
