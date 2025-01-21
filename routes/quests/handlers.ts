@@ -1,13 +1,88 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 
 import { AppBindings } from "../../lib/create-app.ts";
-import { QuestData } from "../../lib/type.ts";
-import { getPaginatedQuestsRoute, getQuestByIdRoute } from "./routes.ts";
+import { Quest, QuestData } from "../../lib/type.ts";
+import {
+  getFilteredQuestsRoute,
+  getPaginatedQuestsRoute,
+  getQuestByIdRoute,
+} from "./routes.ts";
 
 export const setupQuestsRoutes = (
   app: OpenAPIHono<AppBindings>,
   questData: QuestData
 ) => {
+  const filterByArrayProperty = (
+    quests: Quest[],
+    values: string[],
+    operator: "and" | "or"
+  ) => {
+    return quests.filter((quest) => {
+      const questTargets = quest.targets.map((t) => t.toLowerCase());
+
+      return operator === "and"
+        ? values.every((v) => questTargets.includes(v.toLowerCase()))
+        : values.some((v) => questTargets.includes(v.toLowerCase()));
+    });
+  };
+
+  // Handler
+  app.openapi(getFilteredQuestsRoute, (c) => {
+    const {
+      game,
+      questType,
+      difficulty,
+      isKey,
+      targets,
+      targets_operator = "or",
+      map,
+    } = c.req.valid("query");
+
+    let filteredQuests = questData.quests;
+
+    // Filter by exact match properties
+    if (game) {
+      filteredQuests = filteredQuests.filter(
+        (q) => q.game.toLowerCase() === game.toLowerCase()
+      );
+    }
+
+    if (questType) {
+      filteredQuests = filteredQuests.filter(
+        (q) => q.questType.toLowerCase() === questType.toLowerCase()
+      );
+    }
+
+    if (difficulty) {
+      filteredQuests = filteredQuests.filter(
+        (q) => q.difficulty.toLowerCase() === difficulty.toLowerCase()
+      );
+    }
+
+    if (isKey !== undefined) {
+      const isKeyBool = isKey.toLowerCase() === "true";
+      filteredQuests = filteredQuests.filter((q) => q.isKey === isKeyBool);
+    }
+
+    if (map) {
+      filteredQuests = filteredQuests.filter(
+        (q) => q.map.toLowerCase() === map.toLowerCase()
+      );
+    }
+
+    // Filter by targets array
+    if (targets) {
+      const targetValues = targets.split(",").map((t) => t.trim());
+      filteredQuests = filterByArrayProperty(
+        filteredQuests,
+        targetValues,
+        targets_operator
+      );
+    }
+
+    return c.json(filteredQuests);
+  });
+
   app.openapi(getQuestByIdRoute, (c) => {
     const { id } = c.req.valid("param");
     const quest = questData.quests.find((q) => q._id.$oid === id);
@@ -46,7 +121,6 @@ export const setupQuestsRoutes = (
     });
   });
 };
-
 // Once we set the json data in database and query to db,
 // we can write in this way.
 // export const setupQuestsRoutes: RouteHandler<

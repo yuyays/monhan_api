@@ -1,4 +1,5 @@
 import { assertEquals } from "jsr:@std/assert";
+
 import { createRouter } from "../../lib/create-app.ts";
 import { setupQuestsRoutes } from "./handlers.ts";
 
@@ -104,4 +105,140 @@ Deno.test("Quest Routes", async (t) => {
     assertEquals(data.next, null);
     assertEquals(data.previous, "/api/quests?limit=20&offset=80");
   });
+});
+
+Deno.test("Quest Filter Routes", async (t) => {
+  const app = createRouter();
+  setupQuestsRoutes(app, mockQuestData);
+
+  await t.step(
+    "GET /api/quests/filter - should return all quests when no filters",
+    async () => {
+      const res = await app.request("/api/quests/filter");
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 2);
+    }
+  );
+
+  await t.step(
+    "GET /api/quests/filter - should filter by game case-insensitive",
+    async () => {
+      const res = await app.request(
+        "/api/quests/filter?game=monster hunter RISE"
+      );
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 2);
+    }
+  );
+
+  await t.step(
+    "GET /api/quests/filter - should handle non-existent game",
+    async () => {
+      const res = await app.request("/api/quests/filter?game=NonExistent");
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 0);
+    }
+  );
+
+  await t.step(
+    "GET /api/quests/filter - should filter by questType",
+    async () => {
+      const res = await app.request("/api/quests/filter?questType=Hub");
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 1);
+      assertEquals(data[0].name, "Now That's What I Call Great!");
+    }
+  );
+
+  await t.step("GET /api/quests/filter - should filter by isKey", async () => {
+    const res = await app.request("/api/quests/filter?isKey=true");
+    assertEquals(res.status, 200);
+    const data = await res.json();
+    assertEquals(data.length, 2);
+  });
+
+  await t.step(
+    "GET /api/quests/filter - should handle empty targets array",
+    async () => {
+      const res = await app.request("/api/quests/filter?targets=Great Izuchi");
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 1);
+    }
+  );
+
+  await t.step(
+    "GET /api/quests/filter - should handle AND operation for targets",
+    async () => {
+      const res = await app.request(
+        "/api/quests/filter?targets=Great Izuchi,Great Baggi&targets_operator=and"
+      );
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 1);
+      assertEquals(data[0].name, "Now That's What I Call Great!");
+    }
+  );
+
+  await t.step(
+    "GET /api/quests/filter - should handle OR operation for targets",
+    async () => {
+      const res = await app.request(
+        "/api/quests/filter?targets=Great Izuchi,NonExistent&targets_operator=or"
+      );
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 1);
+    }
+  );
+
+  await t.step(
+    "GET /api/quests/filter - should combine multiple filters",
+    async () => {
+      const res = await app.request(
+        "/api/quests/filter?questType=Hub&isKey=true&map=Arena"
+      );
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 1);
+      assertEquals(data[0].name, "Now That's What I Call Great!");
+    }
+  );
+
+  await t.step(
+    "GET /api/quests/filter - should handle case where no quests match all filters",
+    async () => {
+      const res = await app.request(
+        "/api/quests/filter?questType=Hub&map=Shrine Ruins"
+      );
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 0);
+    }
+  );
+
+  await t.step(
+    "GET /api/quests/filter - should handle invalid isKey value",
+    async () => {
+      const res = await app.request("/api/quests/filter?isKey=invalid");
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 0);
+    }
+  );
+
+  await t.step(
+    "GET /api/quests/filter - should handle difficulty filter",
+    async () => {
+      const res = await app.request("/api/quests/filter?difficulty=MR2");
+      assertEquals(res.status, 200);
+      const data = await res.json();
+      assertEquals(data.length, 1);
+      assertEquals(data[0].difficulty, "MR2");
+    }
+  );
 });

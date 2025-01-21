@@ -1,5 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { serveStatic } from "hono/deno";
+import { cors } from "hono/cors";
 import { PinoLogger } from "npm:hono-pino";
 import { pino_Logger } from "../middlewares/pino_logger.ts";
 import { swaggerUI } from "@hono/swagger-ui";
@@ -22,7 +23,13 @@ export default function createApp() {
   app.use(pino_Logger());
   app.use("*", rateLimit(100, 60));
   app.use("/static/*", serveStatic({ root: "./" }));
-  // app.use("*", cors());
+  app.use(
+    "/*",
+    cors({
+      origin: ["http://localhost:3000", "https://monhan-api.deno.dev"],
+      allowMethods: ["GET"],
+    })
+  );
   // app.get(
   //   "*",
   //   cache({
