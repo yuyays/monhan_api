@@ -3,7 +3,6 @@ import { swaggerUI } from "@hono/swagger-ui";
 import { serveStatic } from "hono/deno";
 import { cors } from "hono/cors";
 import { cache } from "hono/cache";
-
 import { PinoLogger } from "npm:hono-pino";
 import { pino_Logger } from "../middlewares/pino_logger.ts";
 
@@ -41,6 +40,8 @@ export default function createApp() {
       wait: true,
     })
   );
+
+  app.get("/favicon.ico", (c) => c.body(null));
   //  app.openapi(getQuestByIdRoute, setupQuestsRoutes);
 
   app.doc("/api/docs", {
