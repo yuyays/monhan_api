@@ -13,6 +13,9 @@ import {
 } from "./routes.ts";
 import { Monster, MonsterData } from "../../lib/type.ts";
 import { AppBindings } from "../../lib/create-app.ts";
+import { db } from "../../db/index.ts";
+import { sql } from "drizzle-orm";
+import { monsters } from "../../db/schema.ts";
 
 export const setupMonsterRoutes = (
   app: OpenAPIHono<AppBindings>,
@@ -23,20 +26,26 @@ export const setupMonsterRoutes = (
     return c.json(types);
   });
 
-  app.openapi(getPaginatedMonstersRoute, (c) => {
-    const limit = parseInt(c.req.query("limit") || "20");
-    const offset = parseInt(c.req.query("offset") || "0");
+  app.openapi(getPaginatedMonstersRoute, async (c) => {
+    const { limit: limitStr, offset: offsetStr } = c.req.valid("query");
+    const limit = parseInt(limitStr || "20");
+    const offset = parseInt(offsetStr || "0");
 
-    const paginatedMonsters = monsterData.monsters.slice(
-      offset,
-      offset + limit
-    );
-    const totalMonsters = monsterData.monsters.length;
+    // Combine count and data fetch in single query for better performance
+    const [{ count }, paginatedMonsters] = await Promise.all([
+      db
+        .select({
+          count: sql<number>`count(*)`,
+        })
+        .from(monsters)
+        .then((res) => res[0]),
+      db.select().from(monsters).limit(limit).offset(offset),
+    ]);
 
     return c.json({
-      count: totalMonsters,
+      count,
       next:
-        offset + limit < totalMonsters
+        offset + limit < count
           ? `/api/monsters?limit=${limit}&offset=${offset + limit}`
           : null,
       previous:

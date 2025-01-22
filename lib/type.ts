@@ -19,39 +19,66 @@ const GameSchema = z
 
 export const MonsterSchema = z
   .object({
-    _id: z.object({
-      $oid: z.string().openapi({
-        example: "5e1570f48a80af35ce52d757",
-      }),
+    id: z.number().openapi({
+      example: 1,
+      description: "Database ID",
+    }),
+    monsterId: z.string().openapi({
+      example: "5e1570f48a80af35ce52d757",
+      description: "Original Monster ID",
     }),
     name: z.string().openapi({
       example: "Arzuros",
+      description: "Monster name",
     }),
     type: z.string().openapi({
       example: "Fanged Beast",
+      description: "Monster type",
     }),
-    isLarge: z.boolean().openapi({
+    isLarge: z.boolean().nullable().openapi({
       example: true,
+      description: "Whether the monster is large",
     }),
     elements: z
       .array(z.string())
-      .optional()
+      .nullable()
       .openapi({
         example: ["Fire", "Thunder"],
+        description: "Monster's elements",
       }),
     ailments: z
       .array(z.string())
-      .optional()
+      .nullable()
       .openapi({
         example: ["Fireblight", "Thunderblight"],
+        description: "Ailments caused by monster",
       }),
     weakness: z
       .array(z.string())
-      .optional()
+      .nullable()
       .openapi({
         example: ["Fire", "Ice"],
+        description: "Monster's weaknesses",
       }),
-    games: z.array(GameSchema),
+    games: z
+      .array(
+        z.object({
+          game: z.string(),
+          image: z.string(),
+          info: z.string().optional(),
+          danger: z.string().optional(),
+        })
+      )
+      .openapi({
+        example: [
+          {
+            game: "Monster Hunter Rise",
+            image: "MHRise-Arzuros_Icon.png",
+            info: "A bear-like monster...",
+            danger: "1",
+          },
+        ],
+      }),
   })
   .openapi("Monster");
 
