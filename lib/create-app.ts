@@ -1,9 +1,12 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { swaggerUI } from "@hono/swagger-ui";
 import { serveStatic } from "hono/deno";
 import { cors } from "hono/cors";
+import { cache } from "hono/cache";
+
 import { PinoLogger } from "npm:hono-pino";
 import { pino_Logger } from "../middlewares/pino_logger.ts";
-import { swaggerUI } from "@hono/swagger-ui";
+
 import { rateLimit } from "./ratelimit.ts";
 
 export type AppBindings = {
@@ -30,14 +33,14 @@ export default function createApp() {
       allowMethods: ["GET"],
     })
   );
-  // app.get(
-  //   "*",
-  //   cache({
-  //     cacheName: "monhan_api",
-  //     cacheControl: "max-age=3600",
-  //     wait: true,
-  //   })
-  // );
+  app.get(
+    "*",
+    cache({
+      cacheName: "monhan_api",
+      cacheControl: "max-age=3600",
+      wait: true,
+    })
+  );
   //  app.openapi(getQuestByIdRoute, setupQuestsRoutes);
 
   app.doc("/api/docs", {
