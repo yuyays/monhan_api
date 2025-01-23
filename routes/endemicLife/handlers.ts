@@ -1,8 +1,9 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { sql } from "drizzle-orm";
+import { sql, and, ilike } from "drizzle-orm";
 
 import {
   getEndemicLifeByNameRoute,
+  getFilteredEndemicLifeRoute,
   getPaginatedEndemicLifeRoute,
 } from "./routes.ts";
 import { EndemicLife, EndemicLifeData } from "../../lib/type.ts";
@@ -15,6 +16,35 @@ export const setupEndemicLifeRoutes = (
   endemicLifeData: EndemicLifeData
 ) => {
   app
+    .openapi(getFilteredEndemicLifeRoute, async (c) => {
+      const { name, game_name } = c.req.valid("query");
+
+      const conditions = [];
+
+      if (name) {
+        conditions.push(ilike(endemicLife.name, `%${name}%`));
+      }
+
+      if (game_name) {
+        conditions.push(
+          sql`EXISTS (
+          SELECT 1 FROM jsonb_array_elements(${endemicLife.game}) as g
+          WHERE LOWER(g->>'game') LIKE LOWER(${`%${game_name}%`})
+        )`
+        );
+      }
+
+      const filteredEndemicLife = await db
+        .select({
+          id: endemicLife.id,
+          name: endemicLife.name,
+          game: endemicLife.game,
+        })
+        .from(endemicLife)
+        .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+      return c.json(filteredEndemicLife);
+    })
     .openapi(getEndemicLifeByNameRoute, (c) => {
       const { name } = c.req.valid("param");
       const endemicLife = endemicLifeData.endemicLife.find(

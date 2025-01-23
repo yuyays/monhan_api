@@ -75,3 +75,36 @@ export const getPaginatedEndemicLifeRoute = createRoute({
     },
   },
 });
+
+export const getFilteredEndemicLifeRoute = createRoute({
+  method: "get",
+  path: "/api/endemic-life/filter",
+  request: {
+    query: z.object({
+      name: z.string().optional(),
+      game_name: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(
+            z.object({
+              id: z.number(),
+              name: z.string(),
+              game: z.array(
+                z.object({
+                  game: z.string(),
+                  info: z.string(),
+                  image: z.string(),
+                })
+              ),
+            })
+          ),
+        },
+      },
+      description: "Filtered list of endemic life",
+    },
+  },
+});
