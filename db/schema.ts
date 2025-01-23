@@ -1,4 +1,11 @@
-import { pgTable, text, boolean, serial, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  boolean,
+  serial,
+  jsonb,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 export const monsters = pgTable("monsters", {
   id: serial().primaryKey().notNull(),
@@ -19,6 +26,19 @@ export const monsters = pgTable("monsters", {
   >(),
 });
 
-// Database-specific types
 export type DbMonster = typeof monsters.$inferSelect;
 export type NewDbMonster = typeof monsters.$inferInsert;
+
+export const endemicLife = pgTable("endemic_life", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  game: jsonb("game").notNull().$type<
+    {
+      game: string;
+      info: string;
+      image: string;
+    }[]
+  >(),
+});
+export type DbEndemicLife = typeof endemicLife.$inferSelect;
+export type NewDbEndemicLife = typeof endemicLife.$inferInsert;

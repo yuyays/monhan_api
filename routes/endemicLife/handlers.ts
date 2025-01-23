@@ -1,4 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { sql } from "drizzle-orm";
 
 import {
   getEndemicLifeByNameRoute,
@@ -6,6 +7,8 @@ import {
 } from "./routes.ts";
 import { EndemicLife, EndemicLifeData } from "../../lib/type.ts";
 import { AppBindings } from "../../lib/create-app.ts";
+import { db } from "../../db/index.ts";
+import { endemicLife } from "../../db/schema.ts";
 
 export const setupEndemicLifeRoutes = (
   app: OpenAPIHono<AppBindings>,
@@ -30,21 +33,33 @@ export const setupEndemicLifeRoutes = (
       return c.json(endemicLife, 200);
     })
 
-    .openapi(getPaginatedEndemicLifeRoute, (c) => {
+    .openapi(getPaginatedEndemicLifeRoute, async (c) => {
       const { limit: limitStr, offset: offsetStr } = c.req.valid("query");
       const limit = parseInt(limitStr || "20");
       const offset = parseInt(offsetStr || "0");
 
-      const paginatedEndemicLife = endemicLifeData.endemicLife.slice(
-        offset,
-        offset + limit
-      );
-      const totalEndemicLife = endemicLifeData.endemicLife.length;
+      const [{ count }, paginatedEndemicLife] = await Promise.all([
+        db
+          .select({
+            count: sql<number>`count(*)`,
+          })
+          .from(endemicLife)
+          .then((res) => res[0]),
+        db
+          .select({
+            id: endemicLife.id,
+            name: endemicLife.name,
+            game: endemicLife.game,
+          })
+          .from(endemicLife)
+          .limit(limit)
+          .offset(offset),
+      ]);
 
       return c.json({
-        count: totalEndemicLife,
+        count,
         next:
-          offset + limit < totalEndemicLife
+          offset + limit < count
             ? `/api/endemic-life?limit=${limit}&offset=${offset + limit}`
             : null,
         previous:

@@ -43,26 +43,8 @@ export const getPaginatedEndemicLifeRoute = createRoute({
   path: "/api/endemic-life",
   request: {
     query: z.object({
-      limit: z
-        .string()
-        .optional()
-        .openapi({
-          param: {
-            name: "limit",
-            in: "query",
-          },
-          example: "20",
-        }),
-      offset: z
-        .string()
-        .optional()
-        .openapi({
-          param: {
-            name: "offset",
-            in: "query",
-          },
-          example: "0",
-        }),
+      limit: z.string().optional(),
+      offset: z.string().optional(),
     }),
   },
   responses: {
@@ -73,11 +55,23 @@ export const getPaginatedEndemicLifeRoute = createRoute({
             count: z.number(),
             next: z.string().nullable(),
             previous: z.string().nullable(),
-            results: z.array(EndemicLifeSchema),
+            results: z.array(
+              z.object({
+                id: z.number(),
+                name: z.string(),
+                game: z.array(
+                  z.object({
+                    game: z.string(),
+                    info: z.string(),
+                    image: z.string(),
+                  })
+                ),
+              })
+            ),
           }),
         },
       },
-      description: "Paginated list of endemic life",
+      description: "List of endemic life",
     },
   },
 });
