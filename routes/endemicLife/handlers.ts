@@ -6,15 +6,11 @@ import {
   getFilteredEndemicLifeRoute,
   getPaginatedEndemicLifeRoute,
 } from "./routes.ts";
-import { EndemicLife, EndemicLifeData } from "../../lib/type.ts";
 import { AppBindings } from "../../lib/create-app.ts";
 import { db } from "../../db/index.ts";
 import { endemicLife } from "../../db/schema.ts";
 
-export const setupEndemicLifeRoutes = (
-  app: OpenAPIHono<AppBindings>,
-  endemicLifeData: EndemicLifeData
-) => {
+export const setupEndemicLifeRoutes = (app: OpenAPIHono<AppBindings>) => {
   app
     .openapi(getFilteredEndemicLifeRoute, async (c) => {
       const { name, game_name } = c.req.valid("query");
@@ -45,13 +41,20 @@ export const setupEndemicLifeRoutes = (
 
       return c.json(filteredEndemicLife);
     })
-    .openapi(getEndemicLifeByNameRoute, (c) => {
+    .openapi(getEndemicLifeByNameRoute, async (c) => {
       const { name } = c.req.valid("param");
-      const endemicLife = endemicLifeData.endemicLife.find(
-        (e: EndemicLife) => e.name.toLowerCase() === name.toLowerCase()
-      );
 
-      if (!endemicLife) {
+      const result = await db
+        .select({
+          id: endemicLife.id,
+          name: endemicLife.name,
+          game: endemicLife.game,
+        })
+        .from(endemicLife)
+        .where(sql`LOWER(${endemicLife.name}) = LOWER(${name})`)
+        .limit(1);
+
+      if (result.length === 0) {
         return c.json(
           {
             message: `Endemic life not found: ${name}`,
@@ -60,7 +63,7 @@ export const setupEndemicLifeRoutes = (
         );
       }
 
-      return c.json(endemicLife, 200);
+      return c.json(result[0], 200);
     })
 
     .openapi(getPaginatedEndemicLifeRoute, async (c) => {
