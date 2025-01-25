@@ -1,4 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { sql, and, SQL, ilike, or } from "drizzle-orm";
+import { PgColumn } from "drizzle-orm/pg-core";
 
 import {
   getFilteredMonstersRoute,
@@ -11,19 +13,18 @@ import {
   getMonsterTypesRoute,
   getPaginatedMonstersRoute,
 } from "./routes.ts";
-import { Monster, MonsterData } from "../../lib/type.ts";
 import { AppBindings } from "../../lib/create-app.ts";
 import { db } from "../../db/index.ts";
-import { sql } from "drizzle-orm";
 import { monsters } from "../../db/schema.ts";
 
-export const setupMonsterRoutes = (
-  app: OpenAPIHono<AppBindings>,
-  monsterData: MonsterData
-) => {
-  app.openapi(getMonsterTypesRoute, (c) => {
-    const types = [...new Set(monsterData.monsters.map((m) => m.type))];
-    return c.json(types);
+export const setupMonsterRoutes = (app: OpenAPIHono<AppBindings>) => {
+  app.openapi(getMonsterTypesRoute, async (c) => {
+    const types = await db
+      .select({ type: monsters.type })
+      .from(monsters)
+      .groupBy(monsters.type);
+
+    return c.json(types.map((m) => m.type));
   });
 
   app.openapi(getPaginatedMonstersRoute, async (c) => {
@@ -56,30 +57,32 @@ export const setupMonsterRoutes = (
     });
   });
 
-  app.openapi(getFilteredMonstersRoute, (c) => {
-    const filterByArrayProperty = (
-      monsters: Monster[],
-      values: string[],
-      operator: "and" | "or",
-      propertyName: keyof Pick<Monster, "elements" | "ailments" | "weakness">
-    ) => {
-      console.log(`Filtering ${propertyName}:`);
-      console.log(`Operation: ${operator.toUpperCase()}`);
-      console.log(`Values to match: ${values.join(", ")}`);
+  const createArrayFilter = (
+    column: PgColumn<any>,
+    values: string[],
+    operator: "and" | "or"
+  ): SQL => {
+    const normalizedValues = values.map((v) => v.trim().toLowerCase());
 
-      return monsters.filter((monster) => {
-        const monsterValues =
-          monster[propertyName]?.map((v) => v.toLowerCase()) ?? [];
+    const conditions = normalizedValues.map(
+      (value) =>
+        sql`EXISTS (
+          SELECT 1 FROM jsonb_array_elements_text(${column}) elem
+          WHERE ${ilike(sql`elem`, `%${value}%`)}
+        )`
+    );
 
-        const result =
-          operator === "and"
-            ? values.every((v) => monsterValues.includes(v))
-            : values.some((v) => monsterValues.includes(v));
+    if (conditions.length === 0) {
+      return sql`TRUE`;
+    }
 
-        return result;
-      });
-    };
+    if (operator === "and") {
+      return and(...conditions) ?? sql`TRUE`;
+    }
+    return or(...conditions) ?? sql`TRUE`;
+  };
 
+  app.openapi(getFilteredMonstersRoute, async (c) => {
     const {
       elements,
       elements_operator = "or",
@@ -89,123 +92,128 @@ export const setupMonsterRoutes = (
       ailments_operator = "or",
     } = c.req.valid("query");
 
-    let filteredMonsters = monsterData.monsters;
+    const totalCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(monsters)
+      .then((res) => res[0].count);
 
-    // Apply filters if parameters are provided
+    console.log("Total monsters in database:", totalCount);
+
+    const conditions = [];
+
     if (elements) {
-      const elementValues = elements
-        .split(",")
-        .map((e) => e.trim().toLowerCase());
-      filteredMonsters = filterByArrayProperty(
-        filteredMonsters,
+      const elementValues = elements.split(",").map((e) => e.trim());
+      console.log(
+        "Processing elements:",
         elementValues,
-        elements_operator,
-        "elements"
+        "with operator:",
+        elements_operator
+      );
+      conditions.push(
+        createArrayFilter(monsters.elements, elementValues, elements_operator)
       );
     }
-
     if (weakness) {
-      const weaknessValues = weakness
-        .split(",")
-        .map((w) => w.trim().toLowerCase());
-      filteredMonsters = filterByArrayProperty(
-        filteredMonsters,
-        weaknessValues,
-        weakness_operator,
-        "weakness"
+      const weaknessValues = weakness.split(",").map((w) => w.trim());
+      conditions.push(
+        createArrayFilter(monsters.weakness, weaknessValues, weakness_operator)
       );
     }
 
     if (ailments) {
-      const ailmentValues = ailments
-        .split(",")
-        .map((a) => a.trim().toLowerCase());
-      filteredMonsters = filterByArrayProperty(
-        filteredMonsters,
-        ailmentValues,
-        ailments_operator,
-        "ailments"
+      const ailmentValues = ailments.split(",").map((a) => a.trim());
+      conditions.push(
+        createArrayFilter(monsters.ailments, ailmentValues, ailments_operator)
       );
     }
+
+    const filteredMonsters = await db
+      .select()
+      .from(monsters)
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
 
     return c.json(filteredMonsters);
   });
 
-  app.openapi(getMonsterRoute, (c) => {
+  app.openapi(getMonsterRoute, async (c) => {
     const name = c.req.param("name");
-    const monster = monsterData.monsters.find(
-      (m: Monster) => m.name.toLowerCase() === name.toLowerCase()
-    );
-    if (monster) {
-      return c.json(monster);
+    const monster = await db
+      .select()
+      .from(monsters)
+      .where(sql`LOWER(${monsters.name}) = LOWER(${name})`)
+      .limit(1);
+
+    if (monster.length > 0) {
+      return c.json(monster[0]);
     }
     return c.notFound();
   });
 
-  app.openapi(getMonstersByTypeRoute, (c) => {
+  app.openapi(getMonstersByTypeRoute, async (c) => {
     const { type } = c.req.valid("param");
-    const monsters: Monster[] = monsterData.monsters.filter(
-      (m: Monster) => m.type.toLowerCase() === type.toLowerCase()
-    );
+    const result = await db
+      .select()
+      .from(monsters)
+      .where(sql`LOWER(${monsters.type}) = LOWER(${type})`);
 
-    if (monsters.length === 0) {
+    if (result.length === 0) {
       return c.json({ message: `No monsters found with type: ${type}` }, 404);
     }
-    return c.json(monsters, 200);
+    return c.json(result, 200);
   });
 
-  // Add these handlers after your route definitions
-  app.openapi(getMonstersByElementRoute, (c) => {
+  app.openapi(getMonstersByElementRoute, async (c) => {
     const { element } = c.req.valid("param");
-    const monsters = monsterData.monsters.filter((m) =>
-      m.elements?.some((e) => e.toLowerCase() === element.toLowerCase())
-    );
-    return monsters.length > 0
-      ? c.json(monsters, 200)
+    const result = await db.select().from(monsters).where(sql`EXISTS (
+      SELECT 1 FROM jsonb_array_elements_text(${monsters.elements}) as elem
+      WHERE LOWER(elem::text) = LOWER(${element})
+    )`);
+
+    return result.length > 0
+      ? c.json(result, 200)
       : c.json({ message: `No monsters found with element: ${element}` }, 404);
   });
 
-  app.openapi(getMonstersByAilmentRoute, (c) => {
+  app.openapi(getMonstersByAilmentRoute, async (c) => {
     const { ailment } = c.req.valid("param");
-    const monsters = monsterData.monsters.filter((m) =>
-      m.ailments?.some((a) => a.toLowerCase() === ailment.toLowerCase())
-    );
-    return monsters.length > 0
-      ? c.json(monsters, 200)
+    const result = await db.select().from(monsters).where(sql`EXISTS (
+      SELECT 1 FROM jsonb_array_elements_text(${monsters.ailments}) as elem
+      WHERE LOWER(elem::text) = LOWER(${ailment})
+    )`);
+
+    return result.length > 0
+      ? c.json(result, 200)
       : c.json({ message: `No monsters found with ailment: ${ailment}` }, 404);
   });
 
-  app.openapi(getMonstersByWeaknessRoute, (c) => {
+  app.openapi(getMonstersByWeaknessRoute, async (c) => {
     const { weakness } = c.req.valid("param");
-    const monsters = monsterData.monsters.filter((m) =>
-      m.weakness?.some((w) => w.toLowerCase() === weakness.toLowerCase())
-    );
-    return monsters.length > 0
-      ? c.json(monsters, 200)
+    const result = await db.select().from(monsters).where(sql`EXISTS (
+      SELECT 1 FROM jsonb_array_elements_text(${monsters.weakness}) as elem
+      WHERE LOWER(elem::text) = LOWER(${weakness})
+    )`);
+
+    return result.length > 0
+      ? c.json(result, 200)
       : c.json(
           { message: `No monsters found with weakness: ${weakness}` },
           404
         );
   });
 
-  app.openapi(getMonsterIconRoute, (c) => {
+  app.openapi(getMonsterIconRoute, async (c) => {
     const { name } = c.req.valid("param");
-    const monster = monsterData.monsters.find(
-      (m) => m.name.toLowerCase() === name.toLowerCase()
-    );
+    const monster = await db
+      .select()
+      .from(monsters)
+      .where(sql`LOWER(${monsters.name}) = LOWER(${name})`)
+      .limit(1);
 
-    if (monster?.games?.[0]?.image) {
-      const iconPath = `/static/monster-hunter-DB-master/icons/${monster.games[0].image}`;
-      console.log("Icon path:", iconPath);
+    if (monster[0]?.games?.[0]?.image) {
+      const iconPath = `/static/monster-hunter-DB-master/icons/${monster[0].games[0].image}`;
       return c.redirect(iconPath);
     }
 
-    console.log("Monster or image not found for:", name);
-    return c.json(
-      {
-        message: `Icon not found for monster: ${name}`,
-      },
-      404
-    );
+    return c.json({ message: `Icon not found for monster: ${name}` }, 404);
   });
 };

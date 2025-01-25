@@ -291,6 +291,7 @@ export const getFilteredMonstersRoute = createRoute({
       elements_operator: z
         .enum(["and", "or"])
         .optional()
+        .default("or")
         .openapi({
           param: {
             name: "elements_operator",
@@ -313,6 +314,7 @@ export const getFilteredMonstersRoute = createRoute({
       weakness_operator: z
         .enum(["and", "or"])
         .optional()
+        .default("or")
         .openapi({
           param: {
             name: "weakness_operator",
@@ -335,6 +337,7 @@ export const getFilteredMonstersRoute = createRoute({
       ailments_operator: z
         .enum(["and", "or"])
         .optional()
+        .default("or")
         .openapi({
           param: {
             name: "ailments_operator",
