@@ -84,20 +84,20 @@ export const MonsterSchema = z
 
 export const QuestSchema = z
   .object({
-    _id: z.object({
-      $oid: z.string().openapi({
-        example: "5313279a31807935cec2e31a",
-      }),
+    id: z.number().optional(),
+    quest_id: z.string().openapi({
+      example: "5313279a31807935cec2e31a",
+      description: "Original MongoDB ObjectId",
     }),
     name: z.string().openapi({
       example: "Now That's What I Call Great!",
       description: "Quest name",
     }),
-    client: z.string().optional().openapi({
+    client: z.string().openapi({
       example: "Enthusiastic Commentator",
       description: "NPC who gives the quest",
     }),
-    description: z.string().optional().openapi({
+    description: z.string().openapi({
       example:
         "Welcome to the Arena, folks! And boy do we have a show for you tonight!",
       description: "Quest description text",
@@ -106,7 +106,7 @@ export const QuestSchema = z
       example: "Arena",
       description: "Location where quest takes place",
     }),
-    isKey: z.boolean().openapi({
+    isKey: z.boolean().nullable().openapi({
       example: true,
       description: "Whether this is a key quest",
     }),
@@ -126,10 +126,13 @@ export const QuestSchema = z
       example: "Hunt all target monsters",
       description: "Main objective of the quest",
     }),
-    targets: z.array(z.string()).openapi({
-      example: ["Great Izuchi", "Great Baggi", "Great Wroggi"],
-      description: "Target monsters to hunt",
-    }),
+    targets: z
+      .array(z.string())
+      .nullable()
+      .openapi({
+        example: ["Great Izuchi", "Great Baggi", "Great Wroggi"],
+        description: "Target monsters to hunt",
+      }),
   })
   .openapi("Quest");
 
