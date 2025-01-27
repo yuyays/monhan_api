@@ -1,4 +1,4 @@
-import { OpenAPIHono } from "@hono/zod-openapi";
+import { RouteConfig, RouteHandler } from "@hono/zod-openapi";
 import { sql, and, ilike } from "drizzle-orm";
 
 import {
@@ -10,99 +10,108 @@ import { AppBindings } from "../../lib/create-app.ts";
 import { db } from "../../db/index.ts";
 import { endemicLife } from "../../db/schema.ts";
 
-export const setupEndemicLifeRoutes = (app: OpenAPIHono<AppBindings>) => {
-  app
-    .openapi(getFilteredEndemicLifeRoute, async (c) => {
-      const { name, game_name } = c.req.valid("query");
+type Endemic_LifeRouteHandler<T extends RouteConfig> = RouteHandler<
+  T,
+  AppBindings
+>;
 
-      const conditions = [];
+export const getFilteredEndemicLife: Endemic_LifeRouteHandler<
+  typeof getFilteredEndemicLifeRoute
+> = async (c) => {
+  const { name, game_name } = c.req.valid("query");
 
-      if (name) {
-        conditions.push(ilike(endemicLife.name, `%${name}%`));
-      }
+  const conditions = [];
 
-      if (game_name) {
-        conditions.push(
-          sql`EXISTS (
-          SELECT 1 FROM jsonb_array_elements(${endemicLife.game}) as g
-          WHERE LOWER(g->>'game') LIKE LOWER(${`%${game_name}%`})
-        )`
-        );
-      }
+  if (name) {
+    conditions.push(ilike(endemicLife.name, `%${name}%`));
+  }
 
-      const filteredEndemicLife = await db
-        .select({
-          id: endemicLife.id,
-          name: endemicLife.name,
-          game: endemicLife.game,
-        })
-        .from(endemicLife)
-        .where(conditions.length > 0 ? and(...conditions) : undefined);
+  if (game_name) {
+    conditions.push(
+      sql`EXISTS (
+      SELECT 1 FROM jsonb_array_elements(${endemicLife.game}) as g
+      WHERE LOWER(g->>'game') LIKE LOWER(${`%${game_name}%`})
+    )`
+    );
+  }
 
-      return c.json(filteredEndemicLife);
+  const filteredEndemicLife = await db
+    .select({
+      id: endemicLife.id,
+      name: endemicLife.name,
+      game: endemicLife.game,
     })
-    .openapi(getEndemicLifeByNameRoute, async (c) => {
-      const { name } = c.req.valid("param");
+    .from(endemicLife)
+    .where(conditions.length > 0 ? and(...conditions) : undefined);
 
-      const result = await db
-        .select({
-          id: endemicLife.id,
-          name: endemicLife.name,
-          game: endemicLife.game,
-        })
-        .from(endemicLife)
-        .where(sql`LOWER(${endemicLife.name}) = LOWER(${name})`)
-        .limit(1);
+  return c.json(filteredEndemicLife);
+};
 
-      if (result.length === 0) {
-        return c.json(
-          {
-            message: `Endemic life not found: ${name}`,
-          },
-          404
-        );
-      }
+export const getEndemicLifeByName: Endemic_LifeRouteHandler<
+  typeof getEndemicLifeByNameRoute
+> = async (c) => {
+  const { name } = c.req.valid("param");
 
-      return c.json(result[0], 200);
+  const result = await db
+    .select({
+      id: endemicLife.id,
+      name: endemicLife.name,
+      game: endemicLife.game,
     })
+    .from(endemicLife)
+    .where(sql`LOWER(${endemicLife.name}) = LOWER(${name})`)
+    .limit(1);
 
-    .openapi(getPaginatedEndemicLifeRoute, async (c) => {
-      const { limit: limitStr, offset: offsetStr } = c.req.valid("query");
-      const limit = parseInt(limitStr || "20");
-      const offset = parseInt(offsetStr || "0");
+  if (result.length === 0) {
+    return c.json(
+      {
+        message: `Endemic life not found: ${name}`,
+      },
+      404
+    );
+  }
 
-      const [{ count }, paginatedEndemicLife] = await Promise.all([
-        db
-          .select({
-            count: sql<number>`count(*)`,
-          })
-          .from(endemicLife)
-          .then((res) => res[0]),
-        db
-          .select({
-            id: endemicLife.id,
-            name: endemicLife.name,
-            game: endemicLife.game,
-          })
-          .from(endemicLife)
-          .limit(limit)
-          .offset(offset),
-      ]);
+  return c.json(result[0], 200);
+};
 
-      return c.json({
-        count,
-        next:
-          offset + limit < count
-            ? `/api/endemic-life?limit=${limit}&offset=${offset + limit}`
-            : null,
-        previous:
-          offset > 0
-            ? `/api/endemic-life?limit=${limit}&offset=${Math.max(
-                0,
-                offset - limit
-              )}`
-            : null,
-        results: paginatedEndemicLife,
-      });
-    });
+export const getPaginatedEndemicLife: Endemic_LifeRouteHandler<
+  typeof getPaginatedEndemicLifeRoute
+> = async (c) => {
+  const { limit: limitStr, offset: offsetStr } = c.req.valid("query");
+  const limit = parseInt(limitStr || "20");
+  const offset = parseInt(offsetStr || "0");
+
+  const [{ count }, paginatedEndemicLife] = await Promise.all([
+    db
+      .select({
+        count: sql<number>`count(*)`,
+      })
+      .from(endemicLife)
+      .then((res) => res[0]),
+    db
+      .select({
+        id: endemicLife.id,
+        name: endemicLife.name,
+        game: endemicLife.game,
+      })
+      .from(endemicLife)
+      .limit(limit)
+      .offset(offset),
+  ]);
+
+  return c.json({
+    count,
+    next:
+      offset + limit < count
+        ? `/api/endemic-life?limit=${limit}&offset=${offset + limit}`
+        : null,
+    previous:
+      offset > 0
+        ? `/api/endemic-life?limit=${limit}&offset=${Math.max(
+            0,
+            offset - limit
+          )}`
+        : null,
+    results: paginatedEndemicLife,
+  });
 };
