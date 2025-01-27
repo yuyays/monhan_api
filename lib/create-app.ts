@@ -4,8 +4,8 @@ import { serveStatic } from "hono/deno";
 import { cors } from "hono/cors";
 import { cache } from "hono/cache";
 import { PinoLogger } from "npm:hono-pino";
-import { pino_Logger } from "../middlewares/pino_logger.ts";
 
+import { pino_Logger } from "../middlewares/pino_logger.ts";
 import { rateLimit } from "./ratelimit.ts";
 
 export type AppBindings = {
@@ -42,7 +42,6 @@ export default function createApp() {
   );
 
   app.get("/favicon.ico", (c) => c.body(null));
-  //  app.openapi(getQuestByIdRoute, setupQuestsRoutes);
 
   app.doc("/api/docs", {
     openapi: "3.0.0",
@@ -62,17 +61,9 @@ export default function createApp() {
   app.get(
     "/ui",
     swaggerUI({
-      url: "/doc",
+      url: "/api/docs",
     })
   );
-
-  app.doc("/doc", {
-    info: {
-      title: "Monster Hunter API",
-      version: "v0.01",
-    },
-    openapi: "3.1.0",
-  });
 
   app.get("/", (c) => {
     const html = `

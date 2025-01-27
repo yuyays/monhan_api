@@ -1,143 +1,143 @@
-import { OpenAPIHono } from "@hono/zod-openapi";
+import { RouteConfig, RouteHandler } from "@hono/zod-openapi";
+import { sql, and, SQL, ilike, eq, or } from "drizzle-orm";
+import { PgColumn } from "drizzle-orm/pg-core";
 
 import { AppBindings } from "../../lib/create-app.ts";
-import { Quest, QuestData } from "../../lib/type.ts";
+import { db } from "../../db/index.ts";
+import { quests } from "../../db/schema.ts";
 import {
   getFilteredQuestsRoute,
   getPaginatedQuestsRoute,
   getQuestByIdRoute,
 } from "./routes.ts";
 
-export const setupQuestsRoutes = (
-  app: OpenAPIHono<AppBindings>,
-  questData: QuestData
+type QuestRouteHandler<T extends RouteConfig> = RouteHandler<T, AppBindings>;
+
+export const getQuestById: QuestRouteHandler<typeof getQuestByIdRoute> = async (
+  c
 ) => {
-  const filterByArrayProperty = (
-    quests: Quest[],
+  const { id } = c.req.valid("param");
+
+  const quest = await db
+    .select()
+    .from(quests)
+    .where(eq(quests.quest_id, id))
+    .limit(1);
+
+  if (quest.length === 0) {
+    return c.json(
+      {
+        message: `Quest not found with id: ${id}`,
+      },
+      404
+    );
+  }
+  return c.json(quest[0], 200);
+};
+
+export const getfilterdQuests: QuestRouteHandler<
+  typeof getFilteredQuestsRoute
+> = async (c) => {
+  const createTargetsFilter = (
+    column: PgColumn<any>,
     values: string[],
     operator: "and" | "or"
-  ) => {
-    return quests.filter((quest) => {
-      const questTargets = quest.targets.map((t) => t.toLowerCase());
+  ): SQL => {
+    const normalizedValues = values.map((v) => v.trim().toLowerCase());
 
-      return operator === "and"
-        ? values.every((v) => questTargets.includes(v.toLowerCase()))
-        : values.some((v) => questTargets.includes(v.toLowerCase()));
-    });
+    const conditions = normalizedValues.map(
+      (value) =>
+        sql`EXISTS (
+          SELECT 1 FROM jsonb_array_elements_text(${column}) elem
+          WHERE ${ilike(sql`elem`, `%${value}%`)}
+        )`
+    );
+
+    if (conditions.length === 0) {
+      return sql`TRUE`;
+    }
+
+    if (operator === "and") {
+      return and(...conditions) ?? sql`TRUE`;
+    }
+    return or(...conditions) ?? sql`TRUE`;
   };
 
-  // Handler
-  app.openapi(getFilteredQuestsRoute, (c) => {
-    const {
-      game,
-      questType,
-      difficulty,
-      isKey,
-      targets,
-      targets_operator = "or",
-      map,
-    } = c.req.valid("query");
+  const {
+    game,
+    questType,
+    difficulty,
+    isKey,
+    targets,
+    targets_operator = "or",
+    map,
+  } = c.req.valid("query");
 
-    let filteredQuests = questData.quests;
+  const baseQuery = db.select().from(quests);
+  const conditions: SQL[] = [];
 
-    // Filter by exact match properties
-    if (game) {
-      filteredQuests = filteredQuests.filter(
-        (q) => q.game.toLowerCase() === game.toLowerCase()
-      );
-    }
+  if (game) {
+    conditions.push(sql`LOWER(${quests.game}) = LOWER(${game})`);
+  }
 
-    if (questType) {
-      filteredQuests = filteredQuests.filter(
-        (q) => q.questType.toLowerCase() === questType.toLowerCase()
-      );
-    }
+  if (questType) {
+    conditions.push(sql`LOWER(${quests.questType}) = LOWER(${questType})`);
+  }
 
-    if (difficulty) {
-      filteredQuests = filteredQuests.filter(
-        (q) => q.difficulty.toLowerCase() === difficulty.toLowerCase()
-      );
-    }
+  if (difficulty) {
+    conditions.push(sql`LOWER(${quests.difficulty}) = LOWER(${difficulty})`);
+  }
 
-    if (isKey !== undefined) {
-      const isKeyBool = isKey.toLowerCase() === "true";
-      filteredQuests = filteredQuests.filter((q) => q.isKey === isKeyBool);
-    }
+  if (isKey !== undefined) {
+    conditions.push(sql`${quests.isKey} = ${isKey.toLowerCase() === "true"}`);
+  }
 
-    if (map) {
-      filteredQuests = filteredQuests.filter(
-        (q) => q.map.toLowerCase() === map.toLowerCase()
-      );
-    }
+  if (map) {
+    conditions.push(sql`LOWER(${quests.map}) = LOWER(${map})`);
+  }
 
-    // Filter by targets array
-    if (targets) {
-      const targetValues = targets.split(",").map((t) => t.trim());
-      filteredQuests = filterByArrayProperty(
-        filteredQuests,
-        targetValues,
-        targets_operator
-      );
-    }
+  if (targets) {
+    const targetValues = targets.split(",").map((t) => t.trim());
+    conditions.push(
+      createTargetsFilter(quests.targets, targetValues, targets_operator)
+    );
+  }
 
-    return c.json(filteredQuests);
-  });
+  const filteredQuests =
+    conditions.length > 0
+      ? await baseQuery.where(and(...conditions))
+      : await baseQuery.execute();
 
-  app.openapi(getQuestByIdRoute, (c) => {
-    const { id } = c.req.valid("param");
-    const quest = questData.quests.find((q) => q._id.$oid === id);
+  return c.json(filteredQuests, 200);
+};
 
-    if (!quest) {
-      return c.json(
-        {
-          message: `Quest not found with id: ${id}`,
-        },
-        404
-      );
-    }
+export const getPaginatedQuests: QuestRouteHandler<
+  typeof getPaginatedQuestsRoute
+> = async (c) => {
+  const { limit: limitStr, offset: offsetStr } = c.req.valid("query");
+  const limit = parseInt(limitStr || "20");
+  const offset = parseInt(offsetStr || "0");
 
-    return c.json(quest, 200);
-  });
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(quests);
 
-  app.openapi(getPaginatedQuestsRoute, (c) => {
-    const { limit: limitStr, offset: offsetStr } = c.req.valid("query");
-    const limit = parseInt(limitStr || "20");
-    const offset = parseInt(offsetStr || "0");
+  const paginatedQuests = await db
+    .select()
+    .from(quests)
+    .limit(limit)
+    .offset(offset);
 
-    const paginatedQuests = questData.quests.slice(offset, offset + limit);
-    const totalQuests = questData.quests.length;
-
-    return c.json({
-      count: totalQuests,
-      next:
-        offset + limit < totalQuests
-          ? `/api/quests?limit=${limit}&offset=${offset + limit}`
-          : null,
-      previous:
-        offset > 0
-          ? `/api/quests?limit=${limit}&offset=${Math.max(0, offset - limit)}`
-          : null,
-      results: paginatedQuests,
-    });
+  return c.json({
+    count,
+    next:
+      offset + limit < count
+        ? `/api/quests?limit=${limit}&offset=${offset + limit}`
+        : null,
+    previous:
+      offset > 0
+        ? `/api/quests?limit=${limit}&offset=${Math.max(0, offset - limit)}`
+        : null,
+    results: paginatedQuests,
   });
 };
-// Once we set the json data in database and query to db,
-// we can write in this way.
-// export const setupQuestsRoutes: RouteHandler<
-//   typeof getQuestByIdRoute,
-//   AppBindings
-// > = (c) => {
-//   const { id } = c.req.valid("param");
-//   const quest = questsData.quests.find((q) => q._id.$oid === id);
-
-//   if (!quest) {
-//     return c.json(
-//       {
-//         message: `Quest not found with id: ${id}`,
-//       },
-//       404
-//     );
-//   }
-
-//   return c.json(quest, 200);
-// };
