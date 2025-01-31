@@ -1,10 +1,10 @@
 import createApp from "./lib/create-app.ts";
 import { setupEndemicLifeRoutes } from "./routes/endemicLife/index.ts";
-import { setupMonsterRoutes } from "./routes/monsters/handlers.ts";
+import { setupMonstersRoutes } from "./routes/monsters/index.ts";
 import { setupQuestRoutes } from "./routes/quests/index.ts";
 
 const app = createApp();
-setupMonsterRoutes(app);
+setupMonstersRoutes(app);
 setupEndemicLifeRoutes(app);
 setupQuestRoutes(app);
 export { app };
