@@ -1,6 +1,6 @@
 import { createRoute } from "@hono/zod-openapi";
 import { z } from "@hono/zod-openapi";
-import { MonsterSchema } from "../../lib/type.ts";
+import { MonsterSchema, QuestSchema } from "../../lib/type.ts";
 
 export const getMonsterRoute = createRoute({
   method: "get",
@@ -356,6 +356,45 @@ export const getFilteredMonstersRoute = createRoute({
         },
       },
       description: "Filtered list of monsters",
+    },
+  },
+});
+
+export const getMonsterQuestsRoute = createRoute({
+  method: "get",
+  path: "/api/monsters/{id}/quests",
+  request: {
+    params: z.object({
+      id: z.string().openapi({
+        param: {
+          name: "id",
+          in: "path",
+        },
+        example: "5313279a31807935cec2e31a",
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            monster: MonsterSchema,
+            quests: z.array(QuestSchema),
+          }),
+        },
+      },
+      description: "Quests featuring the specified monster",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: "Monster not found",
     },
   },
 });
