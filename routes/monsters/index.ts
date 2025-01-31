@@ -28,9 +28,9 @@ import {
 
 export const setupMonstersRoutes = (app: OpenAPIHono<AppBindings>) => {
   app.openapi(getMonsterTypesRoute, getMonsterTypes);
-  app.openapi(getPaginatedMonstersRoute, getPaginatedMonsters);
-  app.openapi(getMonsterQuestsRoute, getMonsterQuests);
   app.openapi(getFilteredMonstersRoute, getFilteredMonsters);
+  app.openapi(getMonsterQuestsRoute, getMonsterQuests);
+  app.openapi(getPaginatedMonstersRoute, getPaginatedMonsters);
   app.openapi(getMonsterRoute, getMonster);
   app.openapi(getMonstersByTypeRoute, getMonstersByType);
   app.openapi(getMonstersByElementRoute, getMonstersByElement);
