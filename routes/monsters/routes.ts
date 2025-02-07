@@ -398,3 +398,44 @@ export const getMonsterQuestsRoute = createRoute({
     },
   },
 });
+
+export const getSimilarMonstersRoute = createRoute({
+  method: "get",
+  path: "/api/monsters/{id}/similar",
+  request: {
+    params: z.object({
+      id: z.string().openapi({
+        param: {
+          name: "id",
+          in: "path",
+        },
+        example: "5313279a31807935cec2e31a",
+        description: "Monster ID to find similar monsters for",
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            source: MonsterSchema,
+            similarByElements: z.array(MonsterSchema),
+            similarByWeakness: z.array(MonsterSchema),
+          }),
+        },
+      },
+      description: "Similar monsters by elements and weaknesses",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: "Monster not found",
+    },
+  },
+});

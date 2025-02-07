@@ -12,6 +12,7 @@ import {
   getMonstersByWeaknessRoute,
   getMonsterIconRoute,
   getMonsterQuestsRoute,
+  getSimilarMonstersRoute,
 } from "./routes.ts";
 import {
   getFilteredMonsters,
@@ -24,6 +25,7 @@ import {
   getMonsterTypes,
   getPaginatedMonsters,
   getMonsterQuests,
+  getSimilarMonsters,
 } from "./handlers.ts";
 
 export const setupMonstersRoutes = (app: OpenAPIHono<AppBindings>) => {
@@ -41,4 +43,5 @@ export const setupMonstersRoutes = (app: OpenAPIHono<AppBindings>) => {
   app.openapi(getMonsterRoute, getMonster);
 
   app.openapi(getPaginatedMonstersRoute, getPaginatedMonsters);
+  app.openapi(getSimilarMonstersRoute, getSimilarMonsters);
 };

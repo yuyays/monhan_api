@@ -16,6 +16,7 @@ import {
   getMonstersByWeaknessRoute,
   getMonsterTypesRoute,
   getPaginatedMonstersRoute,
+  getSimilarMonstersRoute,
 } from "./routes.ts";
 
 type MonsterRouteHandler<T extends RouteConfig> = RouteHandler<T, AppBindings>;
@@ -271,6 +272,74 @@ export const getMonsterQuests: MonsterRouteHandler<
     {
       monster: monster[0],
       quests: monsterQuests,
+    },
+    200
+  );
+};
+
+export const getSimilarMonsters: MonsterRouteHandler<
+  typeof getSimilarMonstersRoute
+> = async (c) => {
+  const { id } = c.req.valid("param");
+
+  const sourceMonster = await db
+    .select()
+    .from(monsters)
+    .where(eq(monsters.monsterId, id))
+    .limit(1);
+
+  if (sourceMonster.length === 0) {
+    return c.json(
+      {
+        message: `Monster not found with id: ${id}`,
+      },
+      404
+    );
+  }
+
+  // Find monsters with similar elements
+  const similarByElements = sourceMonster[0].elements
+    ? await db
+        .select()
+        .from(monsters)
+        .where(
+          and(
+            sql`${monsters.monsterId} != ${id}`,
+            sql`EXISTS (
+              SELECT 1 FROM jsonb_array_elements_text(${monsters.elements}) elem
+              WHERE elem IN (SELECT jsonb_array_elements_text(${sql`${JSON.stringify(
+                sourceMonster[0].elements
+              )}`}::jsonb))
+            )`
+          )
+        )
+        .limit(5)
+    : [];
+
+  // Find monsters with similar weaknesses
+  const similarByWeakness = sourceMonster[0].weakness
+    ? await db
+        .select()
+        .from(monsters)
+        .where(
+          and(
+            sql`${monsters.monsterId} != ${id}`,
+            sql`EXISTS (
+              SELECT 1 FROM jsonb_array_elements_text(${monsters.weakness}) weak
+              WHERE weak IN (SELECT jsonb_array_elements_text(${sql`${JSON.stringify(
+                sourceMonster[0].weakness
+              )}`}::jsonb))
+            )`
+          )
+        )
+        .limit(5)
+    : [];
+
+  return c.json(
+    {
+      source: sourceMonster[0],
+      similarByElements,
+      similarByWeakness,
     },
     200
   );
