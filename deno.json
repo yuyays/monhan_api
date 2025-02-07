@@ -1,11 +1,11 @@
 {
   "imports": {
     "@hono/swagger-ui": "npm:@hono/swagger-ui@^0.5.0",
-    "@hono/zod-openapi": "npm:@hono/zod-openapi@^0.18.3",
-    "@types/pg": "npm:@types/pg@^8.11.10",
-    "drizzle-kit": "npm:drizzle-kit@^0.30.2",
-    "drizzle-orm": "npm:drizzle-orm@^0.38.4",
-    "hono": "jsr:@hono/hono@^4.6.15",
+    "@hono/zod-openapi": "npm:@hono/zod-openapi@^0.18.4",
+    "@types/pg": "npm:@types/pg@^8.11.11",
+    "drizzle-kit": "npm:drizzle-kit@^0.30.4",
+    "drizzle-orm": "npm:drizzle-orm@^0.39.2",
+    "hono": "jsr:@hono/hono@^4.7.0",
     "pg": "npm:pg@^8.13.1",
     "postgres": "npm:postgres@^3.4.5",
     "zod": "npm:zod@^3.24.1"
