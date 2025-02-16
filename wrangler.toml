@@ -1,0 +1,4 @@
+name = "monhan-api"
+main = "app.ts"
+
+assets = { directory = "static" }
