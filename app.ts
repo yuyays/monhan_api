@@ -9,4 +9,4 @@ setupMonstersRoutes(app);
 setupEndemicLifeRoutes(app);
 setupQuestRoutes(app);
 setupGamesRoutes(app);
-export { app };
+export default app;
