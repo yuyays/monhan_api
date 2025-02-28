@@ -10,10 +10,6 @@ import {
   getMonsterIconRoute,
   getMonsterQuestsRoute,
   getMonsterRoute,
-  getMonstersByAilmentRoute,
-  getMonstersByElementRoute,
-  getMonstersByTypeRoute,
-  getMonstersByWeaknessRoute,
   getMonsterTypesRoute,
   getPaginatedMonstersRoute,
   getSimilarMonstersRoute,
@@ -161,63 +157,6 @@ export const getMonster: MonsterRouteHandler<typeof getMonsterRoute> = async (
     return c.json(monster[0]);
   }
   return c.notFound();
-};
-
-export const getMonstersByType: MonsterRouteHandler<
-  typeof getMonstersByTypeRoute
-> = async (c) => {
-  const { type } = c.req.valid("param");
-  const result = await db
-    .select()
-    .from(monsters)
-    .where(sql`LOWER(${monsters.type}) = LOWER(${type})`);
-
-  if (result.length === 0) {
-    return c.json({ message: `No monsters found with type: ${type}` }, 404);
-  }
-  return c.json(result, 200);
-};
-
-export const getMonstersByElement: MonsterRouteHandler<
-  typeof getMonstersByElementRoute
-> = async (c) => {
-  const { element } = c.req.valid("param");
-  const result = await db.select().from(monsters).where(sql`EXISTS (
-      SELECT 1 FROM jsonb_array_elements_text(${monsters.elements}) as elem
-      WHERE LOWER(elem::text) = LOWER(${element})
-    )`);
-
-  return result.length > 0
-    ? c.json(result, 200)
-    : c.json({ message: `No monsters found with element: ${element}` }, 404);
-};
-
-export const getMonstersByAilment: MonsterRouteHandler<
-  typeof getMonstersByAilmentRoute
-> = async (c) => {
-  const { ailment } = c.req.valid("param");
-  const result = await db.select().from(monsters).where(sql`EXISTS (
-    SELECT 1 FROM jsonb_array_elements_text(${monsters.ailments}) as elem
-    WHERE LOWER(elem::text) = LOWER(${ailment})
-  )`);
-
-  return result.length > 0
-    ? c.json(result, 200)
-    : c.json({ message: `No monsters found with ailment: ${ailment}` }, 404);
-};
-
-export const getMonstersByWeakness: MonsterRouteHandler<
-  typeof getMonstersByWeaknessRoute
-> = async (c) => {
-  const { weakness } = c.req.valid("param");
-  const result = await db.select().from(monsters).where(sql`EXISTS (
-    SELECT 1 FROM jsonb_array_elements_text(${monsters.weakness}) as elem
-    WHERE LOWER(elem::text) = LOWER(${weakness})
-  )`);
-
-  return result.length > 0
-    ? c.json(result, 200)
-    : c.json({ message: `No monsters found with weakness: ${weakness}` }, 404);
 };
 
 export const getMonsterIcon: MonsterRouteHandler<
