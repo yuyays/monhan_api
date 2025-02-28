@@ -5,6 +5,7 @@ import { EndemicLifeSchema } from "../../lib/type.ts";
 export const getEndemicLifeByNameRoute = createRoute({
   method: "get",
   path: "/api/endemic-life/{name}",
+  tags: ["Endemic Life"],
   request: {
     params: z.object({
       name: z.string().openapi({
@@ -41,6 +42,7 @@ export const getEndemicLifeByNameRoute = createRoute({
 export const getPaginatedEndemicLifeRoute = createRoute({
   method: "get",
   path: "/api/endemic-life",
+  tags: ["Endemic Life"],
   request: {
     query: z.object({
       limit: z.string().optional(),
@@ -79,6 +81,7 @@ export const getPaginatedEndemicLifeRoute = createRoute({
 export const getFilteredEndemicLifeRoute = createRoute({
   method: "get",
   path: "/api/endemic-life/filter",
+  tags: ["Endemic Life"],
   request: {
     query: z.object({
       name: z.string().optional(),

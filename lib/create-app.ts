@@ -56,6 +56,24 @@ export default function createApp() {
         description: "Production server",
       },
     ],
+    tags: [
+      {
+        name: "Monsters",
+        description: "Monster-related endpoints",
+      },
+      {
+        name: "Endemic Life",
+        description: "Endemic life-related endpoints",
+      },
+      {
+        name: "Quests",
+        description: "Quest-related endpoints",
+      },
+      {
+        name: "Games",
+        description: "Game-related endpoints",
+      },
+    ],
   });
 
   app.get(

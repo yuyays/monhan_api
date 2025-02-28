@@ -5,6 +5,7 @@ import { MonsterSchema, QuestSchema } from "../../lib/type.ts";
 export const getMonsterRoute = createRoute({
   method: "get",
   path: "/api/monsters/{name}",
+  tags: ["Monsters"],
   request: {
     params: z.object({
       name: z.string().openapi({
@@ -34,6 +35,7 @@ export const getMonsterRoute = createRoute({
 export const getPaginatedMonstersRoute = createRoute({
   method: "get",
   path: "/api/monsters",
+  tags: ["Monsters"],
   request: {
     query: z.object({
       limit: z
@@ -78,6 +80,7 @@ export const getPaginatedMonstersRoute = createRoute({
 export const getMonsterTypesRoute = createRoute({
   method: "get",
   path: "/api/types",
+  tags: ["Monsters"],
   responses: {
     200: {
       content: {
@@ -93,6 +96,7 @@ export const getMonsterTypesRoute = createRoute({
 export const getMonsterIconRoute = createRoute({
   method: "get",
   path: "/api/monsters/{name}/icon",
+  tags: ["Monsters"],
   request: {
     params: z.object({
       name: z.string().openapi({
@@ -131,6 +135,7 @@ export const getMonsterIconRoute = createRoute({
 export const getFilteredMonstersRoute = createRoute({
   method: "get",
   path: "/api/monsters/filter",
+  tags: ["Monsters"],
   request: {
     query: z.object({
       elements: z
@@ -219,6 +224,7 @@ export const getFilteredMonstersRoute = createRoute({
 export const getMonsterQuestsRoute = createRoute({
   method: "get",
   path: "/api/monsters/{id}/quests",
+  tags: ["Monsters"],
   request: {
     params: z.object({
       id: z.string().openapi({
@@ -258,6 +264,7 @@ export const getMonsterQuestsRoute = createRoute({
 export const getSimilarMonstersRoute = createRoute({
   method: "get",
   path: "/api/monsters/{id}/similar",
+  tags: ["Monsters"],
   request: {
     params: z.object({
       id: z.string().openapi({

@@ -6,6 +6,7 @@ import { QuestSchema } from "../../lib/type.ts";
 export const getQuestByIdRoute = createRoute({
   method: "get",
   path: "/api/quests/{id}",
+  tags: ["Quests"],
   request: {
     params: z.object({
       id: z.string().openapi({
@@ -42,6 +43,7 @@ export const getQuestByIdRoute = createRoute({
 export const getPaginatedQuestsRoute = createRoute({
   method: "get",
   path: "/api/quests",
+  tags: ["Quests"],
   request: {
     query: z.object({
       limit: z
@@ -86,6 +88,7 @@ export const getPaginatedQuestsRoute = createRoute({
 export const getFilteredQuestsRoute = createRoute({
   method: "get",
   path: "/api/quests/filter",
+  tags: ["Quests"],
   request: {
     query: z.object({
       game: z

@@ -10,6 +10,7 @@ import {
 export const getGameContentRoute = createRoute({
   method: "get",
   path: "/api/games/{gameName}/content",
+  tags: ["Games"],
   request: {
     params: z.object({
       gameName: z.string().openapi({
