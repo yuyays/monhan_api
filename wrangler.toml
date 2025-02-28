@@ -1,5 +1,0 @@
-name = "monhan-api"
-main = "app.ts"
-
-assets = { directory = "static" }
-compatibility_date = "2025-02-16"
